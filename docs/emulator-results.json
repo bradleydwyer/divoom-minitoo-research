@@ -1,0 +1,137 @@
+{
+  "description": "Selected CPU1 observations and offline validation; raw device captures excluded",
+  "hardware_run_date_utc": "2026-10-10",
+  "hardware_units": 1,
+  "hardware_cpu1_executions": 1,
+  "hardware": {
+    "family": "BR28",
+    "architecture": "PI32v2",
+    "stock_version": "343005"
+  },
+  "emulator_source": {
+    "url": "https://github.com/simonjohansson/fm1-emulator",
+    "commit": "4c60c29093b49a0d069fee829fb93fd0716f905a",
+    "cpu_implementation_changed": false,
+    "qemu_version": "11.1.2"
+  },
+  "local_build_host": {
+    "os": "macOS 26.5.2",
+    "architecture": "arm64",
+    "python": "3.13.15",
+    "glib": "2.88.3"
+  },
+  "synthetic_program": {
+    "code_bytes": 282,
+    "block_bytes": 512,
+    "ram_address": "0x00120000",
+    "result_bytes": 76,
+    "input_sha256": "df44ee774ed51e8017e5ab97afe41f9f2381e91a1909b8aae40e0d0e4b0f59fd",
+    "result_sha256": "dfc1044328090e3022a015b2f8bdc79bc42b3a565a18c6a8790e57f5b004a637"
+  },
+  "complete_512_byte_result_identical": true,
+  "cases": 11,
+  "observations": {
+    "initial_psr": "0x00000000",
+    "comparisons": [
+      {
+        "input": "0x0000000e",
+        "unsigned_le_15": 1,
+        "model_prediction": 1
+      },
+      {
+        "input": "0x0000000f",
+        "unsigned_le_15": 1,
+        "model_prediction": 1
+      },
+      {
+        "input": "0x00000010",
+        "unsigned_le_15": 0,
+        "model_prediction": 0
+      },
+      {
+        "input": "0x80000000",
+        "unsigned_le_15": 0,
+        "model_prediction": 0
+      },
+      {
+        "input": "0xffffffff",
+        "unsigned_le_15": 0,
+        "model_prediction": 0
+      }
+    ],
+    "parallel": [
+      {
+        "incoming": "0x11223344",
+        "stored": "0x11223344",
+        "head_result": "0x0000015b",
+        "model_stored": "0x11223344",
+        "model_head_result": "0x0000015b"
+      },
+      {
+        "incoming": "0xaabbccdd",
+        "stored": "0xaabbccdd",
+        "head_result": "0xfffffffe",
+        "model_stored": "0xaabbccdd",
+        "model_head_result": "0xfffffffe"
+      }
+    ],
+    "arithmetic": [
+      {
+        "case": "add_carry",
+        "result": "0x00000000",
+        "psr": "0x00000006",
+        "flags_low4": 6,
+        "model_result": "0x00000000",
+        "model_flags_low4": 6
+      },
+      {
+        "case": "add_overflow",
+        "result": "0x80000000",
+        "psr": "0x00000009",
+        "flags_low4": 9,
+        "model_result": "0x80000000",
+        "model_flags_low4": 9
+      },
+      {
+        "case": "sub_borrow",
+        "result": "0xffffffff",
+        "psr": "0x00000008",
+        "flags_low4": 8,
+        "model_result": "0xffffffff",
+        "model_flags_low4": 8
+      },
+      {
+        "case": "sub_equal",
+        "result": "0x00000000",
+        "psr": "0x00000006",
+        "flags_low4": 6,
+        "model_result": "0x00000000",
+        "model_flags_low4": 6
+      }
+    ],
+    "agrees_with_model": true,
+    "note": "Structural capture validity is independent of model agreement. Only low four PSR bits compared."
+  },
+  "hardware_rom_return_confirmed": true,
+  "hardware_preserved_registers_measured": false,
+  "hardware_instruction_count_measured": false,
+  "post_probe_normal_boot_confirmed": false,
+  "offline_controls": {
+    "marker_cases_passed": 4,
+    "cpu1_cases_passed": 5,
+    "cpu1_instructions": 63,
+    "upstream_tests": {
+      "run": 224,
+      "passed": 221,
+      "skipped": 3,
+      "skip_reason": "Optional tests requiring external firmware; no vendor firmware supplied"
+    }
+  },
+  "limits": [
+    "One fixed CPU1 program on one unit; not whole-ISA or board validation",
+    "Carry and zero always coincide in these cases; individual bit assignments are not distinguished",
+    "No peripheral, IRQ, timing or stock-firmware boot validation",
+    "Stack/register preservation and instruction count checked in the synthetic emulator, not measured on hardware",
+    "Normal boot after this CPU1 run has not yet been confirmed; flash restoration remains unproven"
+  ]
+}

@@ -20,6 +20,7 @@ After a live tool has finished, hold the **front-left orange power button for ab
 ## Read more
 
 - [Progress](docs/progress.md): what has worked on the physical MiniToo.
+- [Offline emulator checks](docs/emulator.md): small CPU tests, results from the MiniToo, and how to reproduce them without a device.
 - [USB and RAM](docs/usb-and-ram.md): how small programs reach the device and return.
 - [Leaving ROM mode](docs/rom-mode.md): the tested button procedure and how to check normal USB has returned.
 - [Flash backup](docs/flash-backup.md): the backup path, operation and limits.
@@ -39,4 +40,4 @@ python3 -m venv .venv
 
 Tests and `--plan` do not access hardware. Read the [backup notes](docs/flash-backup.md) before running a live tool.
 
-Original code and text are licensed under [MIT](LICENSE). Third-party portions retain their licenses; see [NOTICE](NOTICE). This independent project is not affiliated with Divoom.
+Original code and text are licensed under [MIT](LICENSE), unless marked otherwise. The emulator C fixtures use GPL-2.0-or-later; their Python tooling uses Apache-2.0. See [NOTICE](NOTICE) for file-specific terms and third-party credits. This independent project is not affiliated with Divoom.

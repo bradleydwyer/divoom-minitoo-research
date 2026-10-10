@@ -2,8 +2,31 @@ Divoom MiniToo research
 Copyright 2026 Brad Dwyer
 
 Original project code and research text are licensed under the MIT License in
-LICENSE, unless a file or the notices below identify third-party material.
+LICENSE, unless a file or the notices below specify another license.
 Third-party material retains its original ownership and license.
+
+Offline emulator fixtures
+-------------------------
+Copyright 2026 Brad Dwyer
+
+tools/emulator/minitoo_ram_check.c and minitoo_cpu_check.c are licensed under
+GPL-2.0-or-later. The GPL version 2 text is in LICENSES/GPL-2.0-or-later.txt;
+the SPDX headers permit use under that version or any later version.
+
+The Python files in tools/emulator/, tools/minitoo_cpu_probe_payload.py and
+tests/test_minitoo_emulator.py are licensed under Apache-2.0. The complete
+license text is in LICENSES/Apache-2.0.txt.
+
+The fixtures use the PI32v2 CPU implementation and machine interfaces from
+simonjohansson/fm1-emulator; its CPU implementation is unchanged.
+https://github.com/simonjohansson/fm1-emulator
+Commit: 4c60c29093b49a0d069fee829fb93fd0716f905a
+Upstream maintained sources are GPL-2.0-or-later and incorporate QEMU 11.1.2.
+See the pinned upstream LICENSES.md for component licenses and provenance:
+https://github.com/simonjohansson/fm1-emulator/blob/4c60c29093b49a0d069fee829fb93fd0716f905a/LICENSES.md
+
+Only our fixture sources and synthetic test programs are supplied here.
+The upstream CPU sources, QEMU and emulator executables are not bundled.
 
 jl-uboot-tool
 -------------
