@@ -1,0 +1,47 @@
+Divoom MiniToo research
+Copyright 2026 Brad Dwyer
+
+Original project code and research text are licensed under the MIT License in
+LICENSE, unless a file or the notices below identify third-party material.
+Third-party material retains its original ownership and license.
+
+jl-uboot-tool
+-------------
+Copyright (c) 2023 Andrey Grigoryev (kagaimiq)
+License: MIT; complete notice in LICENSES/MIT.txt.
+https://github.com/kagaimiq/jl-uboot-tool
+Commit: adb3f18889e88ac512ce0a3c4d8cc3d3cb30696a
+
+The MengLi transform in tools/minitoo_ram_marker.py was implemented with
+reference to jl-uboot-tool and the official BR28 ROM, with project-specific
+bounds and validation. The MIT notice applies to derived portions; original
+additions are MIT licensed. Upstream protocol descriptions also informed
+minitoo_rom_check.py and the USB/RAM notes. Upstream tools are not bundled.
+
+Jieli-Tech/fw-Bootloader BR28 ROM excerpts
+----------------------------------------
+Source project: Jieli-Tech/fw-Bootloader
+Commit: ff3b9299d1b94d834b995fd858b3f75e2faa9840
+Source file: user_boot/cpu/br28/output/rom.image
+https://github.com/Jieli-Tech/fw-Bootloader/blob/ff3b9299d1b94d834b995fd858b3f75e2faa9840/user_boot/cpu/br28/output/rom.image
+SHA-256: 7cae0a02e3ab3755c1e392f03c89222dd701065ec9bd3ec8ac109a7b3f40f793
+License: Apache-2.0; the complete upstream license is in LICENSES/Apache-2.0.txt.
+The pinned upstream tree has no NOTICE file.
+
+The ROM_FINGERPRINTS constant in tools/minitoo_rom_check.py contains 116 bytes
+extracted from this image. tests/fixtures/br28-probe-rom-regions.json contains
+another 804 bytes. tests/fixtures/core-rom-regions.json contains excerpt
+addresses and hashes, with no instruction bytes. The 16-byte XOR table in tools/minitoo_ram_marker.py is also from this image and is included
+in the fixture's 804 bytes. Original ownership of these bytes is retained by
+the upstream rightsholders.
+
+Changes from the upstream material: selected excerpts were extracted and
+represented as Python constants or JSON/text hexadecimal strings, with
+project-specific addresses, hashes and explanatory metadata. The excerpted
+instruction/table bytes are unchanged. The complete ROM is not bundled.
+
+Vendor materials
+----------------
+Vendor firmware, APKs, extracted components, generated vendor disassembly and
+raw device captures are not distributed here. They are outside the project's
+MIT license. No vendor redistribution license is claimed.

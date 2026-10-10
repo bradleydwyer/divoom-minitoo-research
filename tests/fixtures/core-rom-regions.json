@@ -1,0 +1,61 @@
+{
+  "purpose": "Pinned ROM excerpt addresses and hashes for offline protocol tests",
+  "rom_source": "https://github.com/Jieli-Tech/fw-Bootloader/blob/ff3b9299d1b94d834b995fd858b3f75e2faa9840/user_boot/cpu/br28/output/rom.image",
+  "rom_sha256": "7cae0a02e3ab3755c1e392f03c89222dd701065ec9bd3ec8ac109a7b3f40f793",
+  "hardware_fingerprinted": true,
+  "regions": [
+    {
+      "address": "0x0000468a",
+      "bytes": 158,
+      "sha256": "b2c527ebbdc3c1860f049cd6f8c5dc311b97f9a0001e25aa3a3f81c88907a6e8",
+      "description": "USB receive and fixed CDB length helper"
+    },
+    {
+      "address": "0x00004738",
+      "bytes": 122,
+      "sha256": "b8aeb501a499d14b6a18f241d40c69136f0cddb599ae7c501f8924c6b21b0c2a",
+      "description": "USB send"
+    },
+    {
+      "address": "0x00004948",
+      "bytes": 82,
+      "sha256": "ec2e886c3c5c55e86693dc475bb7e7555ddc3066b4e08416a518f5c7df69b844",
+      "description": "Dispatch and FB06 receive/decode branch"
+    },
+    {
+      "address": "0x0000499a",
+      "bytes": 90,
+      "sha256": "c6ac77e5597ec4ae3fdd75a2c09a99bc49f4f007057e166d22223f375bec56e4",
+      "description": "FD07 transform/send/restore branch"
+    },
+    {
+      "address": "0x00004a70",
+      "bytes": 110,
+      "sha256": "9d1e9fe0045a8e640e220c6ac2f423cdbebf0ab0e143b8ff3f44dd01ac8ad912",
+      "description": "FB08 call and normal response construction"
+    },
+    {
+      "address": "0x0000aa1e",
+      "bytes": 68,
+      "sha256": "0a0118c9693fbcc1d1fd3ef2d0aa61d098c1abd7b998278e74c58f234bcd744c",
+      "description": "MengLi CRC-engine XOR routine"
+    },
+    {
+      "address": "0x0001f619",
+      "bytes": 16,
+      "sha256": "2f3e78fc341f7ee59c7577e9318cd3e10cd9b5b4222ad02274408cdca61f3936",
+      "description": "XOR magic table"
+    },
+    {
+      "address": "0x0000a120",
+      "bytes": 158,
+      "sha256": "634cec37169fd633bfe6cc6fcd121d7a1d64ba1d584f675ed2a44bc4e2c1301f",
+      "description": "Startup registers, stacks and runtime zeroing"
+    }
+  ],
+  "limitations": [
+    "Region hashes do not establish runtime cache state or complete RAM occupancy",
+    "This manifest does not enable an upload or execution command"
+  ],
+  "hardware_check_date": "2026-10-10"
+}

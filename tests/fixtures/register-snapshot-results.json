@@ -1,0 +1,68 @@
+{
+  "usb-flash-state-reported.json": {
+    "snapshot": {
+      "raw_values": {
+        "boot_arg_word": "0x84000300",
+        "iomap_con0": "0x00000000",
+        "spi0_con": "0x00008000",
+        "portd_out": "0x00000010",
+        "portd_dir": "0x0000006f",
+        "portg_out": "0x00000000",
+        "portg_dir": "0x000001ff"
+      },
+      "rom_shadow_selector": 0,
+      "iomap_group_bit14": 0,
+      "shadow_matches_group_bit": true,
+      "portd_bit3_out": 0,
+      "portd_bit3_dir": 1,
+      "portg_bit4_out": 0,
+      "portg_bit4_dir": 1,
+      "note": "Sequential ROM-mode configuration samples; not flash identification, wiring proof, or installed firmware backup"
+    },
+    "result_readback_sha256": "e9e4d2845ca13ec6fc9cae5a602ced275fdd2ae94535ee4801a71bf1ba0ace7a",
+    "upload_readback_sha256": "6e625218e18f9265099bc7c32edb814fc46e5fb7a16cf14697747a0efea4cc63",
+    "snapshot_confirmed": true,
+    "rom_return_confirmed": true
+  },
+  "usb-flash-bus-state-reported.json": {
+    "snapshot": {
+      "raw_values": {
+        "boot_arg_word": "0x84000300",
+        "boot_arg_osc_hz": "0x016e3600",
+        "boot_arg_sys_hz": "0x02dc6c00",
+        "iomap_con0": "0x00000000",
+        "spi0_con": "0x00008000",
+        "sfc_con": "0x01580034",
+        "sfc_enc_con": "0x00000000",
+        "perienc_enccon": "0x00000000",
+        "clock_sys_div": "0x00000000",
+        "clock_con0": "0x00000031",
+        "clock_con1": "0x00001643",
+        "portd_out": "0x00000010",
+        "portd_dir": "0x0000006f",
+        "portd_die": "0x0000007f",
+        "portd_pu": "0x00000018",
+        "portd_pd": "0x00000000",
+        "portg_out": "0x00000000",
+        "portg_dir": "0x000001ff"
+      },
+      "rom_shadow_selector": 0,
+      "spi0_group_bit14": 0,
+      "sfc_group_bit16": 0,
+      "spi0_crossbar_bit13": 0,
+      "spi0_enabled": false,
+      "sfc_enabled": false,
+      "clock_fields": {
+        "hsb_divider_field": 0,
+        "lsb_divider_field": 0,
+        "sfc_divider_field": 0,
+        "main_clock_selector": 6
+      },
+      "note": "Sequential ROM-mode register samples; no flash-chip protocol, encryption state, geometry or backup is established by these fields alone"
+    },
+    "result_readback_sha256": "033f6d72ddb1ebcf8ff8d76b6737a820d4932d441bb53e567d548cac6d42bf65",
+    "upload_readback_sha256": "42a82dbb4da591e5adfec802b695d38068576373b9e1c4a7c1fbb6f31afd2348",
+    "snapshot_confirmed": true,
+    "rom_return_confirmed": true
+  }
+}
