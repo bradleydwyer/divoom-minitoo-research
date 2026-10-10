@@ -1,5 +1,12 @@
 # Divoom MiniToo research
 
+> [!WARNING]
+> **Work in progress. Use at your own risk.**
+>
+> This is unfinished research. Running these tools could brick your MiniToo or cause data loss. Live experiments have only been tested on one device. Restoring a backup and recovering from broken firmware are still unproven.
+>
+> **Please don't rush into running the live tools yet.** Read the linked notes and understand the risks first. RAM-only code and read-only flash operations are not risk-free.
+
 Getting custom code running on a MiniToo, while keeping it working.
 
 **Custom code runs from RAM, and we have read the complete 2 MiB main flash twice with matching results.** The tested unit runs stock firmware **343005** and uses Jieli's PI32v2 architecture. The earlier [MiniToo Forth work](https://tangled.org/antiali.as/minitoo-forth) targeted a different hardware/firmware family.
