@@ -20,6 +20,6 @@ On macOS the live operation requires privileged USB capture:
 sudo .venv/bin/python tools/minitoo_flash_dump.py --run-fixed-full-dump
 ```
 
-Keep USB connected until the final report. Success has `full_dump_confirmed: true` and matching `pass_sha256` values. The device remains in ROM afterwards: use the tested power-key restart, release at startup and reconnect USB if necessary. Retain failure reports rather than automatically retrying.
+Keep USB connected until the final report. Success has `full_dump_confirmed: true` and matching `pass_sha256` values. The device remains in ROM afterwards: follow the [ROM-exit guide](rom-mode.md), including release timing and USB reconnection after startup. Retain failure reports rather than automatically retrying.
 
 A unique private ignored `artifacts/device-captures/minitoo-flash-full-.../` directory holds two binary passes, original RAM results, a chunk journal and a final report. These can contain device-specific data. Keep them private and store a separate verified copy; local capture alone is not an off-machine backup.

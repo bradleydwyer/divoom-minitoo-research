@@ -13,10 +13,15 @@ Getting custom code running on a MiniToo, while keeping it working.
 
 Nothing has been flashed. Recovery from a broken application and restoring a backup are still unproven. These experimental tools have been tested on one device.
 
+## Leaving ROM mode
+
+After a live tool has finished, hold the **front-left orange power button for about ten seconds**, then **release as soon as the startup animation appears**. Let it finish booting. If normal USB is missing, reconnect the cable once after startup. Continued holding can cause repeated restarts. See the [ROM-exit guide](docs/rom-mode.md) for USB checks, failure handling and the limits of this tested procedure.
+
 ## Read more
 
 - [Progress](docs/progress.md): what has worked on the physical MiniToo.
 - [USB and RAM](docs/usb-and-ram.md): how small programs reach the device and return.
+- [Leaving ROM mode](docs/rom-mode.md): the tested button procedure and how to check normal USB has returned.
 - [Flash backup](docs/flash-backup.md): the backup path, operation and limits.
 - [Technical notes](docs/technical-notes.md): memory bounds, checks and builds.
 - [References](docs/references.md): earlier work, sources and specifications.

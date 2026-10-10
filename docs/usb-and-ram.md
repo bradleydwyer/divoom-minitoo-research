@@ -8,6 +8,6 @@ A standard INQUIRY identifies the device. A fixed vendor command requests ROM en
 
 The smallest program changes one expected word and returns. Larger programs have separately pinned bytes, bounded results and private stacks. Each host helper checks its result and ROM return. These are RAM programs, not installed firmware.
 
-The front-left power key restarted this unit from idle ROM after about ten seconds. Release at startup; continued holding can repeat the restart. USB may need reconnecting after startup. Recovery from arbitrary hung code or a broken application is not established.
+The [ROM-exit guide](rom-mode.md) gives the tested front-left power-button procedure, release timing, USB reconnection and an OS-only USB check. Recovery from arbitrary hung code or a broken application is not established.
 
 On macOS, capture needs administrator privileges and temporarily detaches all device interfaces, including audio. `minitoo_usb_inventory.py` reads OS metadata without sending USB requests. Offline tests and plans never launch live commands.
