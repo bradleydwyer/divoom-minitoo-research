@@ -28,7 +28,7 @@ The workbench does not automatically pick up a new emulator build.
 | Restart | Starts a fresh owned QEMU process, paused at the configured entry point. |
 | Ten-second reset | A cancellable ten-second hold that triggers the same process restart. Physical power/reset circuitry is not modelled by this gesture. |
 | RAM inspector | Reads internal RAM through QMP while paused. |
-| Joystick and six buttons | UI and event transport are implemented. Actual guest input wiring is pending. |
+| Joystick and six buttons | An explicit GPIO profile connects the five joystick contacts and logical button 1. Analog buttons 2–6 remain disabled in that profile. |
 | SD card bay | Stages read-only raw images and models card presence in the input lab. Guest insertion requires an emulated SD controller and removable block device. |
 | File browser | Lists local workspace files and run outputs. Guest filesystem access is pending. |
 
@@ -49,12 +49,20 @@ The current framebuffer bridge exposes `/machine` property
 The browser can rotate the image for landscape viewing. Reading the property
 does not advance emulated time or modify guest state.
 
-The planned guest input interface uses a writable `harness-inputs` integer and
+A separate logical guest input interface uses a writable `harness-inputs` integer and
 a readable `harness-inputs-wired` boolean. Bits 0–4 represent up, down, left,
 right and press; bits 5–10 represent buttons 1–6. One means pressed. Every
 update supplies the complete contact state, including zero to release all
 contacts. The emulator should advertise the interface as wired only when it
 drives the inputs that firmware actually samples.
+
+The new external GPIO profile instead maps contact state to existing sampled
+GPIO properties. It holds the startup power input until a declared retirement
+threshold, then releases it automatically and enables controls. The actual
+release count is recorded. This is a diagnostic startup fixture, not a measured
+physical three-second hold. Mapping follows installed software; physical button
+labels remain unmeasured. No firmware event or program-counter trigger is
+injected.
 
 SD insertion uses QEMU's removable-media interface once the board exposes a
 compatible device. Uploaded raw images are read-only and limited to 64 MiB in
@@ -63,13 +71,20 @@ guest or mount its filesystem.
 
 ## Checks and limits
 
-Sixteen backend tests and browser checks passed locally. The checks cover the
+Twenty-one backend tests pass, including startup release, preserving unrelated
+GPIO bits, and rejecting unavailable controls. Earlier browser checks cover the
 eleven digital contacts, release on lost focus, input recording/replay,
 ten-second reset completion/cancellation, SD-image staging, and the real
 emulator's display, pause/run/restart and RAM reads. The synthetic native
 display fixture produced the same PPM bytes as its saved reference image.
 
-Guest button delivery and guest SD operation have not been established by
-those checks. Input replay follows host wall-clock timing, and is not an
+A later real-browser check verified automatic startup release and Up accepted
+by the firmware scanner after a sixteen-second host hold. Separate native input
+replays also pass debounce and reach application handlers. This establishes
+selected GPIO input delivery, not normal boot or a working menu. Guest SD
+operation and analog-button delivery remain unfinished. Short host clicks can
+end before debounce at the current emulator speed.
+
+Input replay follows host wall-clock timing, and is not an
 instruction-deterministic replay system. The workbench is local software;
 these tests did not access the physical MiniToo.

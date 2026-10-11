@@ -10,26 +10,37 @@ BR28 board model and [browser workbench](workbench.md) are not yet included here
 The unchanged captured application initializes RAM, passes its startup CRC,
 prints diagnostics, starts both main cores, enters the scheduler and mounts
 its flash filesystem. It also passes modeled oscillator capture, board power
-setup, TIMER2 waits, ADC initialization and PSRAM initialization. The latest
-run with the normal-startup input profile and an explicit scheduling quantum reaches two billion instructions.
+setup, TIMER2 waits, ADC initialization and PSRAM initialization. The recorded
+six-frame checkpoint uses declared input states and an explicit scheduling
+quantum, and reaches its instruction budget.
 GPIO routing, USB detection setup, RTC clock selection,
 SD initialization retries and disabled EQ/audio-ADC initialization now pass.
 The SD driver executes its own timeout/offline paths under an explicit
 nonresponding-controller profile. Audio decoder/output tasks are created;
 DAC configuration and six key inputs now pass. With explicitly released
 analog keys, a held power button and the reached
-SD1 offline input branch, normal app/UI/LVGL tasks start and the first IMD
+SD1 offline input branch, app/UI/LVGL tasks start and the first IMD
 sleep-out command is sent. An explicit static RTC snapshot and bounded PWM
 configuration then pass. Stock submits six complete 20,480-pixel frames, totaling 122,880 pixels.
 The first is uniformly pale in the current model; the second is black.
-The latest saved frame retains the five-color graphic, which the owner
-recognizes as HOT-heart in the browser viewer. Color packing and physical
-panel orientation remain unqualified; model-exported colors are not measured
-physical colors.
+The saved five-color HOT-heart is an embedded fallback selected when
+`storage/sd0/D/power_on.gif` cannot be opened. Independent decoding of that
+embedded asset reproduces the complete saved model frame. The firmware also
+reports missing stored configuration and startup audio. The separate SD0 C/D
+content volumes have not been captured; the two-megabyte program-flash backup
+is not their image. SD0 does not necessarily mean the removable microSD slot.
+Color packing and physical panel orientation remain unqualified; model-exported
+colors are not measured physical colors.
+
+The owner reports normal physical startup as an approximately three-second
+power-button hold, an animated Divoom logo on black, further animations and
+sounds, then a clock face. HOT-heart was not part of that sequence. Battery
+animation was mainly seen after a long reset, rather than in the latest normal
+power-off/on cycle. These are operator observations, not measured timing.
 
 Startup prints `divoom finish to init!`, passes common and channel0 microphone
 configuration, and consumes synthetic mono silence through its audio ring.
-The latest run supplies 517,325 synthetic samples, with 1,010 watermark
+That recorded run supplies 517,325 synthetic samples, with 1,010 watermark
 consumptions and 2,020 acknowledgements completed. It reaches its two-billion
 instruction budget without a CPU or MMIO fault, with 623,360 balanced IRQ entries
 and returns. The shared lock is free at the stop.
@@ -48,11 +59,17 @@ selects product test; released PB9 with no held power key selects power-off.
 Holding PB1 passes the firmware's 71-sample startup gate. These are declared
 emulated input states, not newly measured button voltages.
 
+Later separate replays release PB1 and verify that joystick inputs pass the
+firmware scanner and debounce. An accepted long joystick press reaches a mode
+change request, which the current application state refuses; no menu transition
+is demonstrated. The workbench now supports a GPIO profile with automatic
+startup release and six connected controls. Analog buttons remain unavailable.
+
 | Area | Implemented scope |
 | --- | --- |
 | CPU and memory | PI32v2 execution, two main cores, internal RAM, reference ROM, MMU aliases, functional interrupts and hardware locks |
 | Timers and clocks | Core tick and the timer/capture paths used so far, with explicitly supplied clock inputs and functional timing |
-| Storage | SPI0 reads from the captured flash, a mapped flash-data window and the stock filesystem mount |
+| Storage | SPI0 reads from the captured program flash, a mapped flash-data window and its stock filesystem mount; separate SD0 C/D content remains unavailable |
 | SD0 | Configuration and checked command snapshots under an explicit nonresponding profile; genuine guest timeout/offline paths execute; no card responses, data transfers or interrupts |
 | USB0 | Explicit disconnected-peer input profile for connection-detection setup; no packet transfer, SIE completion or USB interrupts |
 | RTC | Bounded oscillator/clock configuration and an explicit static five-byte time snapshot with delayed completion; no advancing calendar, alarm or time-setting |
@@ -109,11 +126,13 @@ boundary as the nominal-clock baseline. The copy does not measure absolute
 frequency or establish source freshness.
 Only 4,201 of the reference ROM's 131,072 bytes have been matched to this unit.
 The bootloader handoff, some reset/interrupt rules, clocks, ADC inputs, PSRAM
-capacity and timing remain partly assumed. Joystick delivery, audio, Bluetooth,
+capacity and timing remain partly assumed. Analog-button delivery, audio, Bluetooth,
 USB protocol behavior and full timing accuracy remain unfinished.
 
-The immediate work is to continue beyond the verified startup graphic and
-qualify further UI, input and peripheral behavior. Emulator development runs
+The immediate work is to acquire the separate startup content and provide a
+responsive SD/MMC path so unchanged firmware can open its own assets, alongside
+further UI, input and peripheral qualification. The fallback frame does not
+establish normal boot completion. Emulator development runs
 offline; physical measurements are prepared and executed separately.
 The display-divider interpretation follows installed firmware and differs
 from the family SDK. A passive panel capture would help resolve actual clock

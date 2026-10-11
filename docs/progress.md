@@ -15,8 +15,8 @@ Results as of 11 October 2026 cover one physical MiniToo running stock firmware
 | Read ordinary 2 MiB main-flash array twice | Both complete files matched; all 1,024 chunks checked |
 | Decompile and analyse captured firmware | Image inventoried, every application byte checked against the vendor listing, and 1,201 reachable procedures exported through REA; [findings and limits](firmware-analysis.md) |
 | Build an initial offline emulator | Published RAM-only fixtures run small PI32v2 programs; [scope and offline checks](emulator.md) |
-| Execute unchanged stock startup offline | Both main cores and scheduler running; filesystem mounted; explicit inputs and bounded peripheral models reach normal app/UI/LVGL tasks, six display frames and microphone configuration/capture with synthetic silence. The latest run reaches two billion instructions and passes the earlier P11 reply/shared-lock stall under an explicit quantum-4 scheduling profile. Complete boot and full UI behavior remain unfinished |
-| Render through the emulated display | Synthetic native PI32v2 guests produce complete IMD frames; stock firmware has transferred six frames totaling 122,880 pixels. The latest saved frame contains the same five-color graphic, recognizable to the owner as HOT-heart in the browser viewer. Color accuracy and physical orientation remain unproven |
+| Execute unchanged stock startup offline | Both main cores and scheduler running; filesystem mounted; explicit inputs and bounded peripheral models reach app/UI/LVGL tasks, six display frames and microphone configuration/capture with synthetic silence. The recorded six-frame checkpoint reaches two billion instructions and passes the earlier P11 reply/shared-lock stall under an explicit quantum-4 scheduling profile. Complete boot and full UI behavior remain unfinished |
+| Render through the emulated display | Synthetic native PI32v2 guests produce complete IMD frames; stock firmware has transferred six frames totaling 122,880 pixels. The saved HOT-heart is the embedded missing-`power_on.gif` fallback, independently decoded to the complete model frame. Separate SD0 C/D startup content has not been captured. Color accuracy and physical orientation remain unproven |
 | Check a fixed RAM CPU probe against the emulator | All eleven cases and the complete 512-byte result matched |
 | Check application USB storage | LUN0 INQUIRY succeeds; READ CAPACITY(10) stalls on its first data read; no capacity, sector or backing-device mapping established; owner confirms no microSD was inserted and normal operation after reattachment |
 | Run a combined CPU/trim batch | All eleven jobs completed; ten CPU blocks match after three categories of emulator correction; normal startup confirmed after the whole batch |
@@ -35,7 +35,13 @@ Results as of 11 October 2026 cover one physical MiniToo running stock firmware
 
 Offline verification checked both full file sizes/hashes, every original RAM result block, each chunk hash and all twelve ROM fingerprints after every call. Raw captures remain private. No firmware update, flash program/erase or status-register write has been sent. Mode-release frames change volatile protocol state.
 
-This captures the ordinary main-chip array, rather than every storage device. Matching copies do not independently prove every address line or establish a restore path.
+This captures the ordinary main-chip array, rather than every storage device. It includes the embedded HOT-heart fallback but not an acquired SD0 C/D content image. Matching copies do not independently prove every address line or establish a restore path.
+
+The owner reports normal startup after an approximately three-second power
+press as an animated Divoom logo on black, further animations and sounds, then
+the default clock face. HOT-heart was absent. Battery animation was mainly
+seen after a long reset, not the latest ordinary power-off/on cycle. These
+operator observations are separate from emulator results and measured timing.
 
 ## Firmware analysis
 
