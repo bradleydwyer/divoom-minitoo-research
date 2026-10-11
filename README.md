@@ -20,6 +20,7 @@ Progress as of **11 October 2026**, from one physical MiniToo:
 | [Run custom code from RAM](docs/usb-and-ram.md) | **Succeeded.** Uploaded code, checked its bytes, executed it and verified its result and return to built-in ROM. |
 | [Build an initial emulator](docs/emulator.md) | **Built.** An offline PI32v2 CPU model runs small test programs. It cannot yet boot MiniToo firmware or model its peripherals. |
 | [Check the emulator against the device](docs/emulator.md) | **Succeeded for the tested cases.** Eleven fixed CPU cases matched, including the complete result block. |
+| [Full hardware emulation target](docs/emulator.md) | **In progress.** Target: boot unchanged captured firmware 343005 into a live stock display/UI by emulating both PI32v2 cores, memory, interrupts, timers, display, input, storage and the peripherals needed for real firmware operation. |
 | [Read the main flash](docs/flash-backup.md) | **Succeeded.** Identified the chip and obtained two matching complete 2 MiB reads. |
 | [Decompile and analyse the captured firmware](docs/firmware-analysis.md) | **Analysis pass completed.** REA exported 1,201 reachable procedures, and every application byte was checked against the vendor listing. Complete behavioural reverse engineering remains unfinished. |
 | [Leave idle ROM and boot normally](docs/rom-mode.md) | **Succeeded.** The tested power-button procedure returned the device to stock firmware, including after the display attempt below. |
