@@ -24,6 +24,7 @@ Results as of 11 October 2026 cover one physical MiniToo running stock firmware
 | Compare selected built-in ROM services | Two matching 4,201-byte acquisitions agreed with the reference; whole-ROM identity unproven |
 | Copy retained stock ADC state | VBAT/VBG rings, stored temperature and queue records captured; returned to ROM and subsequent startup reported |
 | Copy stored oscillator calibration | LRC 209.500 kHz and RCH 17.909450 MHz estimates acquired with histories/context; returned to ROM; absolute frequency and source freshness unmeasured |
+| Read PSRAM controller and clock configuration | ROM-context snapshot completed; controller enable fields clear and clock source NONE; subsequent normal startup reported; part, capacity and live application state unmeasured |
 | Run a RAM-only display attempt | Executed and returned to ROM, but timed out on the first byte; zero completed bytes confirmed and backlight not enabled |
 | Boot normally after the display attempt | Confirmed using the tested manual power-key restart |
 | Install modified firmware | Not attempted |
@@ -86,9 +87,18 @@ reference frequency. An offline run using these two estimates reaches the same
 USB initialization boundary as the nominal-input run; the baseline remains
 available unchanged.
 
+The PSRAM configuration sampler also completed and returned to ROM, followed
+by separately confirmed normal startup. Two offline audits checked all 64
+original files and its nine-read native leaf. CON0 was `0xc0000000`, with
+enable fields clear; the other controller words were zero and the clock
+source was NONE. This is post-reset ROM state. The two high bits were set
+in that sample, but their meanings and transitions remain unknown. No PSRAM
+array, command, part ID, capacity or absolute frequency was measured.
+
 The [next probe campaign](hardware-probes.md) prepares several measurements
 together to reduce repeated device setup. Reuse the completed oscillator
-capture and prioritise PSRAM/SD configuration and CPU cases. The fixed batch
+and PSRAM/clock captures; prioritise cached calibration, SD/pin configuration
+and CPU cases. The fixed batch
 samplers and shared runner still need implementation, build and review. Stack
 writes, RTI and TIMER2 pending/acknowledgement/IDLE wake tests have additional prerequisites.
 

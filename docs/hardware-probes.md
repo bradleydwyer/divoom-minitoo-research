@@ -11,7 +11,7 @@ This page is a measurement backlog, not an instruction to run new device code.
 | --- | --- | --- |
 | Stored LRC/RCH oscillator estimates, histories and context | Replace nominal emulator clock inputs with firmware-derived observations | Now captured separately: LRC 209.500 kHz and RCH 17.909450 MHz; both histories match their stored means; reuse this result |
 | Cached calibration words already read by stock firmware | Check the emulator's synthetic zero calibration fixture | Source layout and retention audit needed; no direct fuse operation proposed |
-| PSRAM configuration, clock gates and pin routing | Check controller mode and timing assumptions | Source registers traced; read-side-effect and ROM-entry audit needed |
+| PSRAM configuration, clock gates and pin routing | Check controller mode and timing assumptions | Controller/clock snapshot captured in ROM: disabled, source NONE; reuse it. Live settings, missing pin context and part identification remain open |
 | SD0 configuration and card context | Check controller assumptions and command-based detection | Initial setup now passes offline; command/response behavior is the next dependency |
 | Selected additional GPIO/backlight configuration | Check routing and PWM assumptions | Include only useful fields not already captured; distinguish ROM context from stock operation |
 | CPU arithmetic, carry, shifts and flags | Expand the earlier eleven hardware cases with distinguishing edge cases | Several fixed RAM leaves can be prepared together |
@@ -47,6 +47,6 @@ Passive bus measurements require physical access and suitable instruments;
 they cannot be obtained automatically by a ROM RAM leaf.
 
 Chip revision, natural nested CLI/STI, stack prerequisites, selected ROM bytes,
-retained ADC, stored oscillator estimates, display/PLL configuration and the full main flash have already
+retained ADC, stored oscillator estimates, PSRAM/clock and display/PLL configuration, and the full main flash have already
 been acquired. Reuse those [results and their limits](progress.md) rather than
 repeating them without a new comparison. Original captures remain private.
