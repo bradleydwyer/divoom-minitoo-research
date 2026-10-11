@@ -12,8 +12,9 @@ distinguish full-byte-zero from low-nibble-zero TESTSET writes. These are useful
 additions to an opportunistic batch; emulator work can continue independently.
 Completed oscillator and PSRAM/clock captures can be reused.
 
-Stock firmware has now submitted two complete frames in the emulator; a
-recognizable stock UI and full boot remain pending. The initial memory-write
+Stock firmware has now submitted four complete frames in the emulator,
+including a recognizable graphic; full UI behavior and boot remain unfinished.
+The current progress stall involves P11 replies and a shared lock. The initial memory-write
 command carries no pixels. Checking bounds when pixels are submitted lets the
 later window setup proceed, without establishing physical panel geometry.
 A passive panel-bus capture during normal boot remains a high priority: it can
