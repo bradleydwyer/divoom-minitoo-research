@@ -15,11 +15,12 @@ Results as of 11 October 2026 cover one physical MiniToo running stock firmware
 | Read ordinary 2 MiB main-flash array twice | Both complete files matched; all 1,024 chunks checked |
 | Decompile and analyse captured firmware | Image inventoried, every application byte checked against the vendor listing, and 1,201 reachable procedures exported through REA; [findings and limits](firmware-analysis.md) |
 | Build an initial offline emulator | Published RAM-only fixtures run small PI32v2 programs; [scope and offline checks](emulator.md) |
-| Execute unchanged stock startup offline | Both main cores and scheduler running; filesystem mounted; explicit inputs and bounded peripheral models reach normal app/UI/LVGL tasks, four display frames and microphone configuration/capture with synthetic silence. The latest run reaches one billion instructions; a P11 reply/shared-lock stall is under investigation. Complete boot and full UI behavior remain unfinished |
-| Render through the emulated display | Synthetic native PI32v2 guests produce complete IMD frames; stock firmware has transferred four frames totaling 81,920 pixels. The latest two contain the same five-color graphic, recognizable to the owner as HOT-heart in the browser viewer. Color accuracy and physical orientation remain unproven |
+| Execute unchanged stock startup offline | Both main cores and scheduler running; filesystem mounted; explicit inputs and bounded peripheral models reach normal app/UI/LVGL tasks, six display frames and microphone configuration/capture with synthetic silence. The latest run reaches two billion instructions and passes the earlier P11 reply/shared-lock stall under an explicit quantum-4 scheduling profile. Complete boot and full UI behavior remain unfinished |
+| Render through the emulated display | Synthetic native PI32v2 guests produce complete IMD frames; stock firmware has transferred six frames totaling 122,880 pixels. The latest saved frame contains the same five-color graphic, recognizable to the owner as HOT-heart in the browser viewer. Color accuracy and physical orientation remain unproven |
 | Check a fixed RAM CPU probe against the emulator | All eleven cases and the complete 512-byte result matched |
 | Check application USB storage | LUN0 INQUIRY succeeds; READ CAPACITY(10) stalls on its first data read; no capacity, sector or backing-device mapping established; owner confirms no microSD was inserted and normal operation after reattachment |
 | Run a combined CPU/trim batch | All eleven jobs completed; ten CPU blocks match after three categories of emulator correction; normal startup confirmed after the whole batch |
+| Run a further CPU-edge batch | All 28 programs completed and match the corrected emulator in 28 whole blocks and 444 decoded fields; finite flag/TESTSET observations, with normal startup separately confirmed |
 | Sample chip revision | `SYSTEM.CHIP_ID = 0x00006903`; revision D by the installed firmware's diagnostic |
 | Measure nested CLI/STI behaviour | Observed save/mask/restore sequence matched the emulator hypothesis; eight sampled caller-state words restored |
 | Read stack-bank prerequisites | Stack limits and mask/configuration words captured; no stack register was written |
@@ -111,8 +112,19 @@ useful follow-ups. Cached trim implies a firmware-calculated ADC reference of
 795 mV, not a measured voltage; raw trim stays private and freshness remains
 unproven.
 
-The [next probe campaign](hardware-probes.md) groups those distinguishing CPU
-cases with qualified SD/pin observations. Reuse the completed snapshots. Stack
+The further 28-program CPU-edge batch completed and returned to ROM; normal
+startup after the manual restart was separately confirmed. It varies incoming
+carry/overflow states and samples shift-count boundaries, rotates,
+multiply/divide, high-only TESTSET bytes and pair multiply-subtract. The earlier
+model had 33 post-instruction flag differences; arithmetic results and scratch
+bytes already matched. The corrected emulator matches all 28 whole blocks and
+444 decoded fields. Selected policies for unmeasured operands are checked by
+112 synthetic cases, which provide no extra hardware qualification. General
+large-count carry and pair subtract carry remain partly inferred. Stack, IRQ,
+fault and physical multicore timing behavior were not measured by this batch.
+
+The [next probe campaign](hardware-probes.md) tracks remaining distinguishing CPU
+operands alongside qualified SD/pin observations. Reuse the completed snapshots. Stack
 writes, RTI and TIMER2 tests retain their separate prerequisites.
 
 ## Still to come

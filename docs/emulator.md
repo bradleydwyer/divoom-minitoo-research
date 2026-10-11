@@ -11,7 +11,7 @@ The unchanged captured application initializes RAM, passes its startup CRC,
 prints diagnostics, starts both main cores, enters the scheduler and mounts
 its flash filesystem. It also passes modeled oscillator capture, board power
 setup, TIMER2 waits, ADC initialization and PSRAM initialization. The latest
-run with the normal-startup input profile reaches one billion instructions.
+run with the normal-startup input profile and an explicit scheduling quantum reaches two billion instructions.
 GPIO routing, USB detection setup, RTC clock selection,
 SD initialization retries and disabled EQ/audio-ADC initialization now pass.
 The SD driver executes its own timeout/offline paths under an explicit
@@ -20,21 +20,28 @@ DAC configuration and six key inputs now pass. With explicitly released
 analog keys, a held power button and the reached
 SD1 offline input branch, normal app/UI/LVGL tasks start and the first IMD
 sleep-out command is sent. An explicit static RTC snapshot and bounded PWM
-configuration then pass. Stock submits four complete 20,480-pixel frames.
+configuration then pass. Stock submits six complete 20,480-pixel frames, totaling 122,880 pixels.
 The first is uniformly pale in the current model; the second is black.
-The third and fourth contain the same five-color graphic, which the owner
+The latest saved frame retains the five-color graphic, which the owner
 recognizes as HOT-heart in the browser viewer. Color packing and physical
 panel orientation remain unqualified; model-exported colors are not measured
 physical colors.
 
 Startup prints `divoom finish to init!`, passes common and channel0 microphone
 configuration, and consumes synthetic mono silence through its audio ring.
-The longer run supplies 67,072 samples, with 130 watermark consumptions and
-260 acknowledgements completed. Its tail shows a progress stall: CPU0 waits
-on the shared lock while CPU1 owns it and polls a zero P11 reply-pending
-register after all modeled replies completed. The run stops at its instruction
-budget without a CPU or MMIO fault. The P11/lock interaction needs investigation;
-the cause, complete boot and full UI behavior remain unresolved.
+The latest run supplies 517,325 synthetic samples, with 1,010 watermark
+consumptions and 2,020 acknowledgements completed. It reaches its two-billion
+instruction budget without a CPU or MMIO fault, with 623,360 balanced IRQ entries
+and returns. The shared lock is free at the stop.
+
+The earlier P11 reply/shared-lock stall is passed under an explicit scheduling
+policy that yields after four retired instructions while both cores can run.
+The policy preserves every instruction and its side effects.
+Native controls check exactly-once RAM/CRC effects, blocked-peer handling and
+IRQ return state. This qualifies the tested emulator profile, not physical
+parallel timing or universal race prevention: larger tested quantums still lose
+some synthetic reply-race phases. Complete boot and full UI behavior remain
+unfinished.
 
 The input comparisons matter: unknown PB9 leaves a startup placeholder that
 selects product test; released PB9 with no held power key selects power-off.
@@ -51,12 +58,12 @@ emulated input states, not newly measured button voltages.
 | RTC | Bounded oscillator/clock configuration and an explicit static five-byte time snapshot with delayed completion; no advancing calendar, alarm or time-setting |
 | ADC | Selected internal channels and external PB9, delayed completion, pending/acknowledgement and interrupt behavior; normal startup uses labelled synthetic internal counts and a separate released PB9 input |
 | PSRAM | Controller startup commands and bounded RAM backing; 2 MiB capacity and command timing are explicit assumptions |
-| Display | IMD transfers, RGB565 framebuffer reads, completion and interrupts; synthetic guests render full frames, and stock has transferred four frames including a recognizable graphic; inactive PAP/RGB status reads let the shared ISR return |
+| Display | IMD transfers, RGB565 framebuffer reads, completion and interrupts; synthetic guests render full frames, and stock has transferred six frames including a recognizable graphic; inactive PAP/RGB status reads let the shared ISR return |
 | PWM setup | Reached timer0/channel0 configuration retained; no running counter, waveform or interrupt |
 | Audio initialization and capture | Disabled EQ control and bounded scratch memory, coefficient pointer, DAC clock/gains and common/channel0 microphone configuration; explicit mono silence feeds the audio ring with watermark interrupts and separate acknowledgement/consumption; physical sampling, active DAC playback and general audio processing remain unfinished |
 | Auxiliary processor | Limited P11 startup/watchdog behavior modeled at the interface; its separate instruction stream is not executed |
 
-Offline checks include 117 native core cases, 42 PSRAM integration cases,
+Offline checks include 118 native core cases, 42 PSRAM integration cases,
 75 signed/unsigned stack-byte cases, 26 guarded instruction-scan cases and
 four instruction-fetch cases. Nine additional GPIO-routing/configuration cases
 pass, followed by sixteen initial SD0, twenty-three USB input/configuration and
@@ -69,8 +76,9 @@ configurations, eight runner input checks, 49 PWM configuration cases,
 22 inactive display-interface cases and 21 common microphone configuration cases.
 Channel0 microphone setup adds 41 native cases; synthetic audio capture adds
 36 native cases plus 21 portable scenarios and 1,505 timing-oracle cases with
-sanitizers. Pair multiply-subtract support passes 506 focused native cases;
-its flag-preservation policy remains unmeasured.
+sanitizers. Pair multiply-subtract support passes 506 focused native cases. Its earlier
+flag-preservation policy has been superseded by finite hardware observations;
+general carry behavior beyond those samples remains partly inferred.
 The RTC host tests include 680 timing-oracle cases with sanitizers; display
 checks retain strict rejection of invalid pixel/frame accesses while allowing
 the empty initialization command. The upstream CPU suite passes 221 cases with
@@ -84,6 +92,15 @@ shift/multiply/divide flags and TESTSET writes. Eighteen separate model-policy
 cases check unsampled behavior without claiming physical agreement. The owner
 confirmed normal startup after the whole batch.
 
+A further 28-program CPU-edge batch now matches all 28 complete blocks and
+444 decoded fields. It samples shift counts and incoming carry/overflow states,
+rotate flags, multiply/divide, high-only TESTSET bytes and pair multiply-subtract.
+The old model differed only in 33 post-instruction flag fields. Corrections match
+those observations; 112 separate synthetic cases check selected extrapolated
+policies without adding physical evidence. General overshift carry and pair
+subtract carry still need distinguishing operands. The owner confirmed normal
+startup after the batch.
+
 Hardware evidence also covers eleven earlier CPU cases and the specific
 [chip, interrupt-state, stack, ROM and ADC observations](progress.md#hardware-observations-for-emulation).
 The newer stored-calibration copy supplies firmware estimates of LRC 209,500 Hz
@@ -95,9 +112,9 @@ The bootloader handoff, some reset/interrupt rules, clocks, ADC inputs, PSRAM
 capacity and timing remain partly assumed. Joystick delivery, audio, Bluetooth,
 USB protocol behavior and full timing accuracy remain unfinished.
 
-The immediate work is to resolve the P11/shared-lock stall and continue toward
-complete startup and UI behavior. Emulator development runs offline;
-physical measurements are prepared and executed separately.
+The immediate work is to continue beyond the verified startup graphic and
+qualify further UI, input and peripheral behavior. Emulator development runs
+offline; physical measurements are prepared and executed separately.
 The display-divider interpretation follows installed firmware and differs
 from the family SDK. A passive panel capture would help resolve actual clock
 rate, pixel byte order and physical panel orientation; see the [probe backlog](hardware-probes.md).

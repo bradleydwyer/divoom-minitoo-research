@@ -1,21 +1,23 @@
 # Hardware measurements still wanted
 
-**The first eleven-job CPU/trim batch is complete.** One ROM session collected
-cached calibration and ten CPU programs, and normal startup after the final
-manual restart was confirmed. The corrected emulator matches all ten complete
-CPU result blocks. This page lists remaining measurements; it is not a new
-device invocation.
+**The CPU/trim batch and the further 28-program CPU-edge batch are complete.**
+The corrected emulator matches all ten CPU blocks from the first batch and all
+28 blocks / 444 decoded fields from the second. Normal startup after each
+batch's final manual restart was separately confirmed. This page lists remaining
+measurements; it is not a new device invocation.
 
-Further CPU cases should distinguish incoming carry/overflow effects, shift
-counts 0/1/31/32/33 and TESTSET bytes 16/32/64/128/240. The first batch cannot
-distinguish full-byte-zero from low-nibble-zero TESTSET writes. These are useful
-additions to an opportunistic batch; emulator work can continue independently.
-Completed oscillator and PSRAM/clock captures can be reused.
+The new batch covers the previously requested shift-count boundaries and
+high-only TESTSET bytes. General large-count carry and pair multiply-subtract
+carry still need asymmetric operands that distinguish the surviving rules.
+These are useful additions to an opportunistic batch. Emulator work can continue
+without another hardware run at the current boundary. Completed oscillator and
+PSRAM/clock captures can also be reused.
 
-Stock firmware has now submitted four complete frames in the emulator,
+Stock firmware has now submitted six complete frames in the emulator,
 including a recognizable graphic; full UI behavior and boot remain unfinished.
-The current progress stall involves P11 replies and a shared lock. The initial memory-write
-command carries no pixels. Checking bounds when pixels are submitted lets the
+The earlier P11 reply/shared-lock stall is passed under a qualified emulator
+scheduling profile; physical parallel timing remains unmeasured. The initial
+memory-write command carries no pixels. Checking bounds when pixels are submitted lets the
 later window setup proceed, without establishing physical panel geometry.
 A passive panel-bus capture during normal boot remains a high priority: it can
 test axis/window behavior, actual serial clock rate, pixel byte order and frame
@@ -39,8 +41,8 @@ this page supplies no ready device command.
 | Application USB storage with no card inserted | Check whether the exposed LUN provides usable capacity or sectors | INQUIRY succeeded; the first READ CAPACITY data-IN stalled. No capacity, sector or LUN-to-storage mapping was established. Normal operation after reattachment was confirmed; cause remains unknown |
 | Audio sampling ADC | Qualify effective sample rate, watermark timing, overrun, rearm and shared audio IRQ behavior | Stock code requests 44.1 kHz; ring units and ACK versus consumption ordering are source-derived. Physical sampling behavior remains unmeasured; prepare separately from retained internal-ADC observations |
 | Selected additional GPIO/backlight configuration | Check routing and PWM assumptions | Include only useful fields not already captured; distinguish ROM context from stock operation |
-| CPU arithmetic, carry, shifts and flags | Expand the ten CPU programs with distinguishing edge cases | First cases captured and matched after fixes; distinguish unsampled flags/counts next |
-| CPU loads/stores, read/modify/write, pairs, IF/REP and TESTSET | Compare the emulator's newer instruction behavior with silicon | First cases captured and matched; high-only TESTSET bytes and pair aliasing remain unmeasured |
+| CPU arithmetic, carry, shifts and flags | Distinguish remaining carry rules | Both CPU batches captured and matched after fixes; use asymmetric operands for remaining large-count and pair-carry rules |
+| CPU loads/stores, read/modify/write, pairs, IF/REP and TESTSET | Compare the emulator's newer instruction behavior with silicon | High-only TESTSET bytes now captured and matched; pair aliasing and broader memory/fault behavior remain unmeasured |
 | Remaining main-ROM bytes | Test the reference image beyond the existing 4,201 matching bytes | Immutable mapping and address-zero acquisition still need qualification |
 
 The batch must save each complete result before reusing its upload area and
