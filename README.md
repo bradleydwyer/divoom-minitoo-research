@@ -21,6 +21,7 @@ Progress as of **11 October 2026**, from one physical MiniToo:
 | [Build an initial emulator](docs/emulator.md) | **Built.** An offline PI32v2 CPU model runs small test programs. It cannot yet boot MiniToo firmware or model its peripherals. |
 | [Check the emulator against the device](docs/emulator.md) | **Succeeded for the tested cases.** Eleven fixed CPU cases matched, including the complete result block. |
 | [Read the main flash](docs/flash-backup.md) | **Succeeded.** Identified the chip and obtained two matching complete 2 MiB reads. |
+| [Decompile and analyse the captured firmware](docs/firmware-analysis.md) | **Analysis pass completed.** REA exported 1,201 reachable procedures, and every application byte was checked against the vendor listing. Complete behavioural reverse engineering remains unfinished. |
 | [Leave idle ROM and boot normally](docs/rom-mode.md) | **Succeeded.** The tested power-button procedure returned the device to stock firmware, including after the display attempt below. |
 | Show something using a RAM display program | **Attempted, unsuccessful.** The program ran and returned to ROM, but timed out on the first byte. Zero completed bytes were confirmed; the backlight was not enabled. |
 | Install modified firmware, then restore the original | **Not attempted.** Installation, recovery from broken firmware and restoration remain unproven. |
@@ -30,7 +31,7 @@ Nothing has been flashed. A readable backup does not establish that we can resto
 ## What comes next
 
 1. Diagnose the display peripheral setup and get a visible RAM-only demo working.
-2. Continue offline analysis of the captured stock firmware and its layout.
+2. Fill the remaining gaps in command handling, display/audio, storage and firmware behaviour.
 3. Establish and review installation, recovery and rollback paths before making any persistent change.
 4. Once those paths are established, try a small UI character change, then restore the original and verify normal boot and the restored bytes.
 
@@ -41,6 +42,7 @@ After a live tool has finished, hold the **front-left orange power button for ab
 ## Read more
 
 - [Progress](docs/progress.md): what has worked on the physical MiniToo.
+- [Firmware analysis](docs/firmware-analysis.md): the completed decompilation and analysis pass, its findings and remaining gaps.
 - [Offline emulator checks](docs/emulator.md): small CPU tests, results from the MiniToo, and how to reproduce them without a device.
 - [USB and RAM](docs/usb-and-ram.md): how small programs reach the device and return.
 - [Leaving ROM mode](docs/rom-mode.md): the tested button procedure and how to check normal USB has returned.
