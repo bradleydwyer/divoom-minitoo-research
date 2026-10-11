@@ -11,12 +11,17 @@ The unchanged captured application initializes RAM, passes its startup CRC,
 prints diagnostics, starts both main cores, enters the scheduler and mounts
 its flash filesystem. It also passes modeled oscillator capture, board power
 setup, TIMER2 waits, ADC initialization and PSRAM initialization. The completed
-nominal-input checkpoint executes 415,604,099 instructions with 14,471 interrupt
-entries and returns. GPIO routing, USB detection setup, RTC clock selection,
+unknown-analog-key profile executes 445,184,711 instructions with 25,730
+interrupt entries and returns. GPIO routing, USB detection setup, RTC clock selection,
 SD initialization retries and disabled EQ/audio-ADC initialization now pass.
 The SD driver executes its own timeout/offline paths under an explicit
 nonresponding-controller profile. Audio decoder/output tasks are created;
-the next unsupported operation is DAC control. No stock display transfer or
+DAC configuration and six key inputs now pass. The firmware reaches its
+product-test branch, passes disabled PWM clock-change handling, then stops at
+an unknown GPIO input. A queued ADC placeholder selects that test key while
+the external analog input is unknown. A separate released-key input avoids
+product test but takes the normal power-off path; the startup power-key hold
+and boot environment are being traced. No stock display transfer or
 complete boot has been demonstrated.
 
 | Area | Implemented scope |
@@ -27,10 +32,10 @@ complete boot has been demonstrated.
 | SD0 | Configuration and checked command snapshots under an explicit nonresponding profile; genuine guest timeout/offline paths execute; no card responses, data transfers or interrupts |
 | USB0 | Explicit disconnected-peer input profile for connection-detection setup; no packet transfer, SIE completion or USB interrupts |
 | RTC | Bounded oscillator-enable and clock-selector configuration; no live time or alarm behavior |
-| ADC | Selected internal channels, delayed completion, pending/acknowledgement and interrupt behavior; boot uses labelled synthetic counts |
+| ADC | Selected internal channels and external PB9, delayed completion, pending/acknowledgement and interrupt behavior; boot uses labelled synthetic internal counts and leaves PB9 unknown |
 | PSRAM | Controller startup commands and bounded RAM backing; 2 MiB capacity and command timing are explicit assumptions |
 | Display | IMD register transfers and RGB565 framebuffer reads, completion and interrupts; a native synthetic guest renders full frames |
-| Audio initialization | Disabled EQ control and bounded scratch memory, coefficient pointer and audio-ADC disable; active processing, sampling and DAC remain unfinished |
+| Audio initialization | Disabled EQ control and bounded scratch memory, coefficient pointer and audio-ADC disable; bounded DAC clock/analog/digital gain configuration; active processing, sampling and playback remain unfinished |
 | Auxiliary processor | Limited P11 startup/watchdog behavior modeled at the interface; its separate instruction stream is not executed |
 
 Offline checks include 117 native core cases, 42 PSRAM integration cases,
@@ -45,7 +50,14 @@ The upstream CPU suite passes 221 cases with
 three optional skips. These suites use recorded build identities; they are
 software checks, not that many physical-device comparisons.
 
-Hardware evidence currently covers eleven earlier CPU cases and the specific
+A new eleven-job hardware batch collected cached trim and ten CPU programs.
+The corrected BR28 profile matches all ten complete 512-byte CPU blocks and
+118 named fields. The initial model matched seven blocks; fixes address selected
+shift/multiply/divide flags and TESTSET writes. Eighteen separate model-policy
+cases check unsampled behavior without claiming physical agreement. The owner
+confirmed normal startup after the whole batch.
+
+Hardware evidence also covers eleven earlier CPU cases and the specific
 [chip, interrupt-state, stack, ROM and ADC observations](progress.md#hardware-observations-for-emulation).
 The newer stored-calibration copy supplies firmware estimates of LRC 209,500 Hz
 and RCH 17,909,450 Hz. A separate run with those inputs reaches the same USB

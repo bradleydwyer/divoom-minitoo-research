@@ -15,9 +15,10 @@ Results as of 11 October 2026 cover one physical MiniToo running stock firmware
 | Read ordinary 2 MiB main-flash array twice | Both complete files matched; all 1,024 chunks checked |
 | Decompile and analyse captured firmware | Image inventoried, every application byte checked against the vendor listing, and 1,201 reachable procedures exported through REA; [findings and limits](firmware-analysis.md) |
 | Build an initial offline emulator | Published RAM-only fixtures run small PI32v2 programs; [scope and offline checks](emulator.md) |
-| Execute unchanged stock startup offline | Both main cores and scheduler running; filesystem mounted; ADC, PSRAM, GPIO, USB setup and RTC selection pass; SD retries return offline through guest timeouts, then EQ/audio initialization passes; DAC control is next |
+| Execute unchanged stock startup offline | Both main cores and scheduler running; filesystem mounted; ADC, PSRAM, GPIO, USB setup and RTC selection pass; SD retries return offline through guest timeouts, then EQ/DAC initialization and explicit key inputs pass; unknown analog input selects product test, then a GPIO read stops execution; a separate released-key input takes the power-off path |
 | Render through the emulated display | A synthetic native PI32v2 guest produces complete IMD frames in the browser workbench; no stock UI frame yet |
 | Check a fixed RAM CPU probe against the emulator | All eleven cases and the complete 512-byte result matched |
+| Run a combined CPU/trim batch | All eleven jobs completed; ten CPU blocks match after three categories of emulator correction; normal startup confirmed after the whole batch |
 | Sample chip revision | `SYSTEM.CHIP_ID = 0x00006903`; revision D by the installed firmware's diagnostic |
 | Measure nested CLI/STI behaviour | Observed save/mask/restore sequence matched the emulator hypothesis; eight sampled caller-state words restored |
 | Read stack-bank prerequisites | Stack limits and mask/configuration words captured; no stack register was written |
@@ -95,12 +96,23 @@ source was NONE. This is post-reset ROM state. The two high bits were set
 in that sample, but their meanings and transitions remain unknown. No PSRAM
 array, command, part ID, capacity or absolute frequency was measured.
 
-The [next probe campaign](hardware-probes.md) prepares several measurements
-together to reduce repeated device setup. Reuse the completed oscillator
-and PSRAM/clock captures; prioritise cached calibration, SD/pin configuration
-and CPU cases. The fixed batch
-samplers and shared runner still need implementation, build and review. Stack
-writes, RTI and TIMER2 pending/acknowledgement/IDLE wake tests have additional prerequisites.
+The first combined CPU/trim batch has completed in one ROM session. An
+independent audit checked 674 original files, all eleven upload/readback/result
+cycles and repeated ROM fingerprints. All jobs returned to ROM; the owner
+confirmed normal startup after the whole batch. Caller preservation rests on
+the instruction/return-path audit; caller registers were not sampled.
+
+The ten CPU programs initially matched seven complete blocks. BR28 corrections
+to selected shift/multiply/divide flags and TESTSET writes now match all ten
+512-byte blocks and 118 named fields. The sampled arithmetic distinguishes
+C/Z/N/V; other flag inputs, shift counts and high-only TESTSET bytes remain
+useful follow-ups. Cached trim implies a firmware-calculated ADC reference of
+795 mV, not a measured voltage; raw trim stays private and freshness remains
+unproven.
+
+The [next probe campaign](hardware-probes.md) groups those distinguishing CPU
+cases with qualified SD/pin observations. Reuse the completed snapshots. Stack
+writes, RTI and TIMER2 tests retain their separate prerequisites.
 
 ## Still to come
 
