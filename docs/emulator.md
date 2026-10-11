@@ -12,7 +12,7 @@ prints diagnostics, starts both main cores, enters the scheduler and mounts
 its flash filesystem. It also passes modeled oscillator capture, board power
 setup, TIMER2 waits, ADC initialization and PSRAM initialization. The completed
 11 October checkpoint executes 23,180,192 instructions with 104 interrupt
-entries and 104 returns. GPIO input routing now passes; the next unsupported
+entries and 104 returns. GPIO input-route configuration writes now pass; the next unsupported
 operation is SD0 controller initialization. No stock display transfer or
 complete boot has been demonstrated.
 
