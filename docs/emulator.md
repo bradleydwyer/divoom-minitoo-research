@@ -1,5 +1,10 @@
 # Offline emulator checks
 
+This page describes the RAM-only fixtures distributed in this source tree.
+A separate BR28 board model and [browser workbench](workbench.md) are under
+development in the research checkout. The workbench's display and control
+tools do not change the scope of the published fixtures below.
+
 We can run small PI32v2 programs on the Mac and compare their results with
 the MiniToo. The fixed CPU probe produced the same complete 512-byte result
 on both, with all eleven cases matching.

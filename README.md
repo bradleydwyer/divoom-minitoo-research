@@ -21,6 +21,7 @@ Progress as of **11 October 2026**, from one physical MiniToo:
 | [Build an initial emulator](docs/emulator.md) | **Built.** An offline PI32v2 CPU model runs small test programs. It cannot yet boot MiniToo firmware or model its peripherals. |
 | [Check the emulator against the device](docs/emulator.md) | **Succeeded for the tested cases.** Eleven fixed CPU cases matched, including the complete result block. |
 | [Full hardware emulation target](docs/emulator.md) | **In progress.** Target: boot unchanged captured firmware 343005 into a live stock display/UI by emulating both PI32v2 cores, memory, interrupts, timers, display, input, storage and the peripherals needed for real firmware operation. |
+| [Browser workbench](docs/workbench.md) | **Built in the research checkout.** Live QEMU display, pause/run/restart and RAM reads checked. Guest button wiring and SD-controller support remain pending; workbench sources are not yet included here. |
 | [Read the main flash](docs/flash-backup.md) | **Succeeded.** Identified the chip and obtained two matching complete 2 MiB reads. |
 | [Decompile and analyse the captured firmware](docs/firmware-analysis.md) | **Analysis pass completed.** REA exported 1,201 reachable procedures, and every application byte was checked against the vendor listing. Complete behavioural reverse engineering remains unfinished. |
 | [Leave idle ROM and boot normally](docs/rom-mode.md) | **Succeeded.** The tested power-button procedure returned the device to stock firmware, including after the display attempt below. |
@@ -45,6 +46,7 @@ After a live tool has finished, hold the **front-left orange power button for ab
 - [Progress](docs/progress.md): what has worked on the physical MiniToo.
 - [Firmware analysis](docs/firmware-analysis.md): the completed decompilation and analysis pass, its findings and remaining gaps.
 - [Offline emulator checks](docs/emulator.md): small CPU tests, results from the MiniToo, and how to reproduce them without a device.
+- [Browser workbench](docs/workbench.md): local screen/control tools, their QEMU connection, and the remaining guest input and SD work.
 - [USB and RAM](docs/usb-and-ram.md): how small programs reach the device and return.
 - [Leaving ROM mode](docs/rom-mode.md): the tested button procedure and how to check normal USB has returned.
 - [Flash backup](docs/flash-backup.md): the backup path, operation and limits.
