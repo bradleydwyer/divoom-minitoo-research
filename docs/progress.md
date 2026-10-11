@@ -1,6 +1,7 @@
 # Progress
 
-Results as of 11 October 2026 are from one physical MiniToo running stock firmware 343005.
+Results as of 11 October 2026 cover one physical MiniToo running stock firmware
+343005 and the separate offline emulator. Emulator results are identified below.
 
 | Check | Result |
 | --- | --- |
@@ -13,7 +14,9 @@ Results as of 11 October 2026 are from one physical MiniToo running stock firmwa
 | Read first 64 flash bytes twice | Independent chip reads matched |
 | Read ordinary 2 MiB main-flash array twice | Both complete files matched; all 1,024 chunks checked |
 | Decompile and analyse captured firmware | Image inventoried, every application byte checked against the vendor listing, and 1,201 reachable procedures exported through REA; [findings and limits](firmware-analysis.md) |
-| Build an initial offline emulator | PI32v2 CPU model runs small test programs; firmware boot and peripherals are not implemented; [scope and offline checks](emulator.md) |
+| Build an initial offline emulator | Published RAM-only fixtures run small PI32v2 programs; [scope and offline checks](emulator.md) |
+| Execute unchanged stock startup offline | Both main cores and scheduler running; filesystem mounted; ADC, PSRAM and GPIO initialization pass with explicit model inputs; SD0 initialization is next |
+| Render through the emulated display | A synthetic native PI32v2 guest produces complete IMD frames in the browser workbench; no stock UI frame yet |
 | Check a fixed RAM CPU probe against the emulator | All eleven cases and the complete 512-byte result matched |
 | Sample chip revision | `SYSTEM.CHIP_ID = 0x00006903`; revision D by the installed firmware's diagnostic |
 | Measure nested CLI/STI behaviour | Observed save/mask/restore sequence matched the emulator hypothesis; eight sampled caller-state words restored |
@@ -64,7 +67,7 @@ capture evidence are not included in this public source tree.
 | Stack prerequisites | Both sampled limit pairs were `0x00000000..0xffffffff`; `EMU_CON = 3`, `IPMASK = 0`, `GIEMASK = 0`. These raw settings do not establish enforcement, effective masking or safe stack-pointer writes. No stack aliasing test or RTI was performed. |
 | Selected ROM service bytes | Two independent acquisitions of fifteen disjoint spans matched each other and the reference. Coverage is 4,201 of 131,072 bytes; 126,871 bytes, including address zero, remain unknown. No reference bytes were substituted for holes. |
 | Retained ADC rings | Both indices were 9. All sixteen VBAT samples were 337; VBG samples were 255 or 256, with an installed integer mean of 255. These are raw counts, not battery voltages. |
-| Stored temperature and queue | Stored temperature was 1596 firmware-converted millivolts, not raw counts or degrees. Queue channels matched stock initialization, but the temperature queue still held its default value of 1. It is not a usable raw temperature measurement. |
+| Stored temperature and queue | Stored temperature was 1596 firmware-converted millivolts, not raw counts or degrees. Queue channels matched stock initialization; the temperature queue value of 1 matches its initial default. Its history is unmeasured, so it is not a usable raw temperature measurement. |
 
 The ADC copier executed once, returned to ROM, and startup after the requested
 manual restart was reported. Original capture files were checked offline and
@@ -73,17 +76,17 @@ atomicity and retention from the running application remain unproven. Caller
 preservation for this leaf rests on its instruction audit; CPU state was not
 sampled before and after the ADC copy.
 
-Next is a separate read-only capture of the stock firmware's stored LRC/RCH
-oscillator calibration values and history. Source locations have been traced;
-the fixed sampler still needs implementation, build and review. This will read
-existing values, without starting a new calibration. Stack writes, RTI and
-TIMER2 pending/acknowledgement/IDLE wake tests still need further probe design.
+The [next probe campaign](hardware-probes.md) prepares several measurements
+together to reduce repeated device setup. Stored LRC/RCH calibration is first;
+its source locations have been traced. The fixed samplers and shared runner
+still need implementation, build and review. Stack writes, RTI and TIMER2
+pending/acknowledgement/IDLE wake tests have additional prerequisites.
 
 ## Still to come
 
 - Continue stock firmware boot emulation and use the measured hardware state to check the board model. Prepare the stored oscillator-calibration sampler next.
 - Diagnose the display setup, then demonstrate visible output from RAM code.
-- Close the remaining firmware behaviour and decompiler gaps. The current emulator checks cover a small CPU subset, not a complete MiniToo.
+- Close the remaining firmware behaviour and decompiler gaps. Physical CPU comparisons cover a small subset; broader offline model checks do not establish a complete MiniToo.
 - Establish and review installation, recovery and rollback paths that do not depend on a working application.
 - Only after those paths are established, install a small UI character change, restore the original and verify boot plus the restored firmware bytes.
 

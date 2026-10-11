@@ -1,9 +1,50 @@
-# Offline emulator checks
+# MiniToo emulation and offline checks
 
-This page describes the RAM-only fixtures distributed in this source tree.
-A separate BR28 board model and [browser workbench](workbench.md) are under
-development in the research checkout. The workbench's display and control
-tools do not change the scope of the published fixtures below.
+The research checkout now runs substantial startup code from unchanged stock
+firmware 343005. Complete boot and the stock UI remain unfinished. The public
+source tree currently distributes the earlier RAM-only fixtures; the newer
+BR28 board model and [browser workbench](workbench.md) are not yet included here.
+
+## Stock firmware emulation in the research checkout
+
+The unchanged captured application initializes RAM, passes its startup CRC,
+prints diagnostics, starts both main cores, enters the scheduler and mounts
+its flash filesystem. It also passes modeled oscillator capture, board power
+setup, TIMER2 waits, ADC initialization and PSRAM initialization. The completed
+11 October checkpoint executes 23,180,192 instructions with 104 interrupt
+entries and 104 returns. GPIO input routing now passes; the next unsupported
+operation is SD0 controller initialization. No stock display transfer or
+complete boot has been demonstrated.
+
+| Area | Implemented scope |
+| --- | --- |
+| CPU and memory | PI32v2 execution, two main cores, internal RAM, reference ROM, MMU aliases, functional interrupts and hardware locks |
+| Timers and clocks | Core tick and the timer/capture paths used so far, with explicitly supplied clock inputs and functional timing |
+| Storage | SPI0 reads from the captured flash, a mapped flash-data window and the stock filesystem mount |
+| ADC | Selected internal channels, delayed completion, pending/acknowledgement and interrupt behavior; boot uses labelled synthetic counts |
+| PSRAM | Controller startup commands and bounded RAM backing; 2 MiB capacity and command timing are explicit assumptions |
+| Display | IMD register transfers and RGB565 framebuffer reads, completion and interrupts; a native synthetic guest renders full frames |
+| Auxiliary processor | Limited P11 startup/watchdog behavior modeled at the interface; its separate instruction stream is not executed |
+
+Offline checks include 117 native core cases, 42 PSRAM integration cases,
+75 signed/unsigned stack-byte cases, 26 guarded instruction-scan cases and
+four instruction-fetch cases. Nine additional GPIO-routing/configuration cases
+pass at the latest checkpoint. The upstream CPU suite passes 221 cases with
+three optional skips. These suites use recorded build identities; they are
+software checks, not that many physical-device comparisons.
+
+Hardware evidence currently covers eleven earlier CPU cases and the specific
+[chip, interrupt-state, stack, ROM and ADC observations](progress.md#hardware-observations-for-emulation).
+Only 4,201 of the reference ROM's 131,072 bytes have been matched to this unit.
+The bootloader handoff, some reset/interrupt rules, clocks, ADC inputs, PSRAM
+capacity and timing remain partly assumed. Joystick delivery, audio, Bluetooth,
+USB hardware behavior and full timing accuracy remain unfinished.
+
+The immediate work is to continue from each unsupported operation until the
+firmware submits its first stock frame. Emulator development runs offline;
+physical measurements are prepared and executed separately.
+
+## Published RAM-only fixtures
 
 We can run small PI32v2 programs on the Mac and compare their results with
 the MiniToo. The fixed CPU probe produced the same complete 512-byte result
@@ -12,7 +53,8 @@ on both, with all eleven cases matching.
 The CPU engine is from [simonjohansson/fm1-emulator](https://github.com/simonjohansson/fm1-emulator),
 pinned to commit `4c60c29093b49a0d069fee829fb93fd0716f905a` and built on QEMU
 11.1.2. Our additions are two small RAM test machines, synthetic programs
-and checking scripts. We have left the upstream CPU implementation unchanged.
+and checking scripts. These earlier fixtures leave the upstream CPU implementation
+unchanged; the newer research board model has separate CPU additions and checks.
 
 This is useful for testing instruction behaviour before trying more code on
 the device. **It cannot boot MiniToo firmware.** The test machines have one
