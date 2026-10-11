@@ -11,9 +11,9 @@ The unchanged captured application initializes RAM, passes its startup CRC,
 prints diagnostics, starts both main cores, enters the scheduler and mounts
 its flash filesystem. It also passes modeled oscillator capture, board power
 setup, TIMER2 waits, ADC initialization and PSRAM initialization. The completed
-11 October checkpoint executes 23,180,192 instructions with 104 interrupt
-entries and 104 returns. GPIO input-route configuration writes now pass; the next unsupported
-operation is SD0 controller initialization. No stock display transfer or
+nominal-input checkpoint executes 23,371,970 instructions with 112 interrupt
+entries and 112 returns. GPIO routing and initial SD0 configuration writes now
+pass; the next unsupported operation is USB controller setup. No stock display transfer or
 complete boot has been demonstrated.
 
 | Area | Implemented scope |
@@ -21,6 +21,7 @@ complete boot has been demonstrated.
 | CPU and memory | PI32v2 execution, two main cores, internal RAM, reference ROM, MMU aliases, functional interrupts and hardware locks |
 | Timers and clocks | Core tick and the timer/capture paths used so far, with explicitly supplied clock inputs and functional timing |
 | Storage | SPI0 reads from the captured flash, a mapped flash-data window and the stock filesystem mount |
+| SD0 | Initial controller configuration and acknowledgement; card commands, responses and data transfers remain unsupported |
 | ADC | Selected internal channels, delayed completion, pending/acknowledgement and interrupt behavior; boot uses labelled synthetic counts |
 | PSRAM | Controller startup commands and bounded RAM backing; 2 MiB capacity and command timing are explicit assumptions |
 | Display | IMD register transfers and RGB565 framebuffer reads, completion and interrupts; a native synthetic guest renders full frames |
@@ -29,12 +30,16 @@ complete boot has been demonstrated.
 Offline checks include 117 native core cases, 42 PSRAM integration cases,
 75 signed/unsigned stack-byte cases, 26 guarded instruction-scan cases and
 four instruction-fetch cases. Nine additional GPIO-routing/configuration cases
-pass at the latest checkpoint. The upstream CPU suite passes 221 cases with
+pass, followed by sixteen initial SD0 configuration cases. The upstream CPU suite passes 221 cases with
 three optional skips. These suites use recorded build identities; they are
 software checks, not that many physical-device comparisons.
 
 Hardware evidence currently covers eleven earlier CPU cases and the specific
 [chip, interrupt-state, stack, ROM and ADC observations](progress.md#hardware-observations-for-emulation).
+The newer stored-calibration copy supplies firmware estimates of LRC 209,500 Hz
+and RCH 17,909,450 Hz. A separate run with those inputs reaches the same USB
+boundary as the nominal-clock baseline. The copy does not measure absolute
+frequency or establish source freshness.
 Only 4,201 of the reference ROM's 131,072 bytes have been matched to this unit.
 The bootloader handoff, some reset/interrupt rules, clocks, ADC inputs, PSRAM
 capacity and timing remain partly assumed. Joystick delivery, audio, Bluetooth,

@@ -9,7 +9,7 @@ This page is a measurement backlog, not an instruction to run new device code.
 
 | Measurement | Why it helps | Preparation state |
 | --- | --- | --- |
-| Stored LRC/RCH oscillator estimates, histories and context | Replace nominal emulator clock inputs with firmware-derived observations | Exact installed sources traced; fixed copier needed |
+| Stored LRC/RCH oscillator estimates, histories and context | Replace nominal emulator clock inputs with firmware-derived observations | Now captured separately: LRC 209.500 kHz and RCH 17.909450 MHz; both histories match their stored means; reuse this result |
 | Cached calibration words already read by stock firmware | Check the emulator's synthetic zero calibration fixture | Source layout and retention audit needed; no direct fuse operation proposed |
 | PSRAM configuration, clock gates and pin routing | Check controller mode and timing assumptions | Source registers traced; read-side-effect and ROM-entry audit needed |
 | SD0 configuration and absent-card inputs | Resolve the next stock-startup dependency | Installed paths under investigation |
@@ -47,6 +47,6 @@ Passive bus measurements require physical access and suitable instruments;
 they cannot be obtained automatically by a ROM RAM leaf.
 
 Chip revision, natural nested CLI/STI, stack prerequisites, selected ROM bytes,
-retained ADC, display/PLL configuration and the full main flash have already
+retained ADC, stored oscillator estimates, display/PLL configuration and the full main flash have already
 been acquired. Reuse those [results and their limits](progress.md) rather than
 repeating them without a new comparison. Original captures remain private.

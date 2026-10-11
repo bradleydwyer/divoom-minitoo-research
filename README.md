@@ -20,9 +20,9 @@ Progress as of **11 October 2026**, covering one physical MiniToo and offline em
 | [Run custom code from RAM](docs/usb-and-ram.md) | **Succeeded.** Uploaded code, checked its bytes, executed it and verified its result and return to built-in ROM. |
 | [Build an initial emulator](docs/emulator.md) | **Built.** The published RAM-only fixtures run small PI32v2 test programs. A separate BR28 board model now executes stock startup and models the peripherals needed so far. |
 | [Check the emulator against the device](docs/emulator.md) | **Succeeded for the tested cases.** Eleven fixed CPU cases matched, including the complete result block. |
-| [Measure hardware state for emulation](docs/progress.md#hardware-observations-for-emulation) | **Captured.** Chip revision, nested CLI/STI behaviour, stack configuration and retained ADC values were sampled on the device. These cover specific observations, not full peripheral behaviour. |
+| [Measure hardware state for emulation](docs/progress.md#hardware-observations-for-emulation) | **Captured.** Chip revision, nested CLI/STI behaviour, stack configuration, retained ADC values and stored oscillator estimates were sampled on the device. These cover specific observations, not full peripheral behaviour. |
 | [Compare built-in ROM service bytes](docs/progress.md#hardware-observations-for-emulation) | **Partial success.** Two matching reads covered 4,201 bytes and agreed with the reference. Whole-ROM identity remains unproven. |
-| [Full hardware emulation target](docs/emulator.md#stock-firmware-emulation-in-the-research-checkout) | **In progress.** Unchanged 343005 startup runs both main cores, enters the scheduler, mounts its flash filesystem and passes ADC, PSRAM and GPIO setup. The next dependency is SD0 initialization; the stock UI has not rendered. Target: complete firmware operation with live display, input, storage and the remaining hardware. |
+| [Full hardware emulation target](docs/emulator.md#stock-firmware-emulation-in-the-research-checkout) | **In progress.** Unchanged 343005 startup runs both main cores, enters the scheduler, mounts its flash filesystem and passes ADC, PSRAM, GPIO and initial SD0 configuration. The next dependency is USB setup; the stock UI has not rendered. Target: complete firmware operation with live display, input, storage and the remaining hardware. |
 | [Emulated display](docs/emulator.md#stock-firmware-emulation-in-the-research-checkout) | **Working with a synthetic native guest.** PI32v2 code produces complete frames through modeled IMD registers and framebuffer transfers, visible in the browser workbench. This is separate from the unsuccessful physical display attempt below. |
 | [Browser workbench](docs/workbench.md) | **Built in the research checkout.** Live QEMU display, pause/run/restart and RAM reads checked. Guest button wiring and SD-controller support remain pending; workbench sources are not yet included here. |
 | [Read the main flash](docs/flash-backup.md) | **Succeeded.** Identified the chip and obtained two matching complete 2 MiB reads. |
@@ -35,7 +35,7 @@ Nothing has been flashed. A readable backup does not establish that we can resto
 
 ## What comes next
 
-1. Continue stock firmware boot emulation using measured hardware state. Prepare a [batch of hardware observations](docs/hardware-probes.md), starting with stored oscillator calibration and PSRAM configuration; no batch command is ready yet.
+1. Continue stock firmware boot emulation using measured hardware state. Prepare a [batch of hardware observations](docs/hardware-probes.md), using the completed oscillator capture and prioritising PSRAM/SD configuration and CPU cases; no batch command is ready yet.
 2. Diagnose the display peripheral setup and get a visible RAM-only demo working.
 3. Fill the remaining gaps in command handling, display/audio, storage and firmware behaviour.
 4. Establish and review installation, recovery and rollback paths before making any persistent change.
