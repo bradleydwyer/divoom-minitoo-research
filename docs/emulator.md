@@ -11,9 +11,10 @@ The unchanged captured application initializes RAM, passes its startup CRC,
 prints diagnostics, starts both main cores, enters the scheduler and mounts
 its flash filesystem. It also passes modeled oscillator capture, board power
 setup, TIMER2 waits, ADC initialization and PSRAM initialization. The completed
-nominal-input checkpoint executes 23,371,970 instructions with 112 interrupt
-entries and 112 returns. GPIO routing and initial SD0 configuration writes now
-pass; the next unsupported operation is USB controller setup. No stock display transfer or
+nominal-input checkpoint executes 23,588,867 instructions with 135 interrupt
+entries and 135 returns. GPIO routing, initial SD0 configuration, USB connection
+detection setup and RTC clock selection now pass. The next unsupported
+operation is SD0 command-buffer setup. No stock display transfer or
 complete boot has been demonstrated.
 
 | Area | Implemented scope |
@@ -22,6 +23,8 @@ complete boot has been demonstrated.
 | Timers and clocks | Core tick and the timer/capture paths used so far, with explicitly supplied clock inputs and functional timing |
 | Storage | SPI0 reads from the captured flash, a mapped flash-data window and the stock filesystem mount |
 | SD0 | Initial controller configuration and acknowledgement; card commands, responses and data transfers remain unsupported |
+| USB0 | Explicit disconnected-peer input profile for connection-detection setup; no packet transfer, SIE completion or USB interrupts |
+| RTC | Bounded oscillator-enable and clock-selector configuration; no live time or alarm behavior |
 | ADC | Selected internal channels, delayed completion, pending/acknowledgement and interrupt behavior; boot uses labelled synthetic counts |
 | PSRAM | Controller startup commands and bounded RAM backing; 2 MiB capacity and command timing are explicit assumptions |
 | Display | IMD register transfers and RGB565 framebuffer reads, completion and interrupts; a native synthetic guest renders full frames |
@@ -30,7 +33,8 @@ complete boot has been demonstrated.
 Offline checks include 117 native core cases, 42 PSRAM integration cases,
 75 signed/unsigned stack-byte cases, 26 guarded instruction-scan cases and
 four instruction-fetch cases. Nine additional GPIO-routing/configuration cases
-pass, followed by sixteen initial SD0 configuration cases. The upstream CPU suite passes 221 cases with
+pass, followed by sixteen initial SD0, twenty-three USB input/configuration and
+fourteen RTC configuration cases. The upstream CPU suite passes 221 cases with
 three optional skips. These suites use recorded build identities; they are
 software checks, not that many physical-device comparisons.
 
@@ -43,7 +47,7 @@ frequency or establish source freshness.
 Only 4,201 of the reference ROM's 131,072 bytes have been matched to this unit.
 The bootloader handoff, some reset/interrupt rules, clocks, ADC inputs, PSRAM
 capacity and timing remain partly assumed. Joystick delivery, audio, Bluetooth,
-USB hardware behavior and full timing accuracy remain unfinished.
+USB protocol behavior and full timing accuracy remain unfinished.
 
 The immediate work is to continue from each unsupported operation until the
 firmware submits its first stock frame. Emulator development runs offline;

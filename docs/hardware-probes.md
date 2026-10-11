@@ -12,7 +12,7 @@ This page is a measurement backlog, not an instruction to run new device code.
 | Stored LRC/RCH oscillator estimates, histories and context | Replace nominal emulator clock inputs with firmware-derived observations | Now captured separately: LRC 209.500 kHz and RCH 17.909450 MHz; both histories match their stored means; reuse this result |
 | Cached calibration words already read by stock firmware | Check the emulator's synthetic zero calibration fixture | Source layout and retention audit needed; no direct fuse operation proposed |
 | PSRAM configuration, clock gates and pin routing | Check controller mode and timing assumptions | Source registers traced; read-side-effect and ROM-entry audit needed |
-| SD0 configuration and absent-card inputs | Resolve the next stock-startup dependency | Installed paths under investigation |
+| SD0 configuration and card context | Check controller assumptions and command-based detection | Initial setup now passes offline; command/response behavior is the next dependency |
 | Selected additional GPIO/backlight configuration | Check routing and PWM assumptions | Include only useful fields not already captured; distinguish ROM context from stock operation |
 | CPU arithmetic, carry, shifts and flags | Expand the earlier eleven hardware cases with distinguishing edge cases | Several fixed RAM leaves can be prepared together |
 | CPU loads/stores, read/modify/write, pairs, IF/REP and TESTSET | Compare the emulator's newer instruction behavior with silicon | Owned RAM, bounded execution and audited caller preservation required |
