@@ -11,7 +11,27 @@ Getting custom code running on a MiniToo, while keeping it working.
 
 **Custom code runs from RAM, and we have read the complete 2 MiB main flash twice with matching results.** The tested unit runs stock firmware **343005** and uses Jieli's PI32v2 architecture. The earlier [MiniToo Forth work](https://tangled.org/antiali.as/minitoo-forth) targeted a different hardware/firmware family.
 
-Nothing has been flashed. Recovery from a broken application and restoring a backup are still unproven. These experimental tools have been tested on one device.
+## Where things stand
+
+Progress as of **11 October 2026**, from one physical MiniToo:
+
+| Work | Result |
+| --- | --- |
+| [Run custom code from RAM](docs/usb-and-ram.md) | **Succeeded.** Uploaded code, checked its bytes, executed it and verified its result and return to built-in ROM. |
+| [Compare CPU behaviour with an emulator](docs/emulator.md) | **Succeeded for the tested cases.** Eleven fixed cases matched, including the complete result block. The emulator cannot boot MiniToo firmware or model its peripherals. |
+| [Read the main flash](docs/flash-backup.md) | **Succeeded.** Identified the chip and obtained two matching complete 2 MiB reads. |
+| [Leave idle ROM and boot normally](docs/rom-mode.md) | **Succeeded.** The tested power-button procedure returned the device to stock firmware, including after the display attempt below. |
+| Show something using a RAM display program | **Attempted, unsuccessful.** The program ran and returned to ROM, but timed out on the first byte. Zero completed bytes were confirmed; the backlight was not enabled. |
+| Install modified firmware, then restore the original | **Not attempted.** Installation, recovery from broken firmware and restoration remain unproven. |
+
+Nothing has been flashed. A readable backup does not establish that we can restore it. The button procedure has been tested from idle ROM; recovery from arbitrary hung code or damaged firmware is still unproven. See [detailed progress](docs/progress.md) for the checks and their limits.
+
+## What comes next
+
+1. Diagnose the display peripheral setup and get a visible RAM-only demo working.
+2. Continue offline analysis of the captured stock firmware and its layout.
+3. Establish and review installation, recovery and rollback paths before making any persistent change.
+4. Once those paths are established, try a small UI character change, then restore the original and verify normal boot and the restored bytes.
 
 ## Leaving ROM mode
 
