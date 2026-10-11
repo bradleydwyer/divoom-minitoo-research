@@ -15,7 +15,7 @@ Results as of 11 October 2026 cover one physical MiniToo running stock firmware
 | Read ordinary 2 MiB main-flash array twice | Both complete files matched; all 1,024 chunks checked |
 | Decompile and analyse captured firmware | Image inventoried, every application byte checked against the vendor listing, and 1,201 reachable procedures exported through REA; [findings and limits](firmware-analysis.md) |
 | Build an initial offline emulator | Published RAM-only fixtures run small PI32v2 programs; [scope and offline checks](emulator.md) |
-| Execute unchanged stock startup offline | Both main cores and scheduler running; filesystem mounted; ADC, PSRAM, GPIO, initial SD0, USB detection setup and RTC clock selection pass with explicit model inputs; SD command setup is next |
+| Execute unchanged stock startup offline | Both main cores and scheduler running; filesystem mounted; ADC, PSRAM, GPIO, USB setup and RTC selection pass; SD retries return offline through guest timeouts, then EQ/audio initialization passes; DAC control is next |
 | Render through the emulated display | A synthetic native PI32v2 guest produces complete IMD frames in the browser workbench; no stock UI frame yet |
 | Check a fixed RAM CPU probe against the emulator | All eleven cases and the complete 512-byte result matched |
 | Sample chip revision | `SYSTEM.CHIP_ID = 0x00006903`; revision D by the installed firmware's diagnostic |

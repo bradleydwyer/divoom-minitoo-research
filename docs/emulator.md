@@ -11,10 +11,12 @@ The unchanged captured application initializes RAM, passes its startup CRC,
 prints diagnostics, starts both main cores, enters the scheduler and mounts
 its flash filesystem. It also passes modeled oscillator capture, board power
 setup, TIMER2 waits, ADC initialization and PSRAM initialization. The completed
-nominal-input checkpoint executes 23,588,867 instructions with 135 interrupt
-entries and 135 returns. GPIO routing, initial SD0 configuration, USB connection
-detection setup and RTC clock selection now pass. The next unsupported
-operation is SD0 command-buffer setup. No stock display transfer or
+nominal-input checkpoint executes 415,604,099 instructions with 14,471 interrupt
+entries and returns. GPIO routing, USB detection setup, RTC clock selection,
+SD initialization retries and disabled EQ/audio-ADC initialization now pass.
+The SD driver executes its own timeout/offline paths under an explicit
+nonresponding-controller profile. Audio decoder/output tasks are created;
+the next unsupported operation is DAC control. No stock display transfer or
 complete boot has been demonstrated.
 
 | Area | Implemented scope |
@@ -22,19 +24,24 @@ complete boot has been demonstrated.
 | CPU and memory | PI32v2 execution, two main cores, internal RAM, reference ROM, MMU aliases, functional interrupts and hardware locks |
 | Timers and clocks | Core tick and the timer/capture paths used so far, with explicitly supplied clock inputs and functional timing |
 | Storage | SPI0 reads from the captured flash, a mapped flash-data window and the stock filesystem mount |
-| SD0 | Initial controller configuration and acknowledgement; card commands, responses and data transfers remain unsupported |
+| SD0 | Configuration and checked command snapshots under an explicit nonresponding profile; genuine guest timeout/offline paths execute; no card responses, data transfers or interrupts |
 | USB0 | Explicit disconnected-peer input profile for connection-detection setup; no packet transfer, SIE completion or USB interrupts |
 | RTC | Bounded oscillator-enable and clock-selector configuration; no live time or alarm behavior |
 | ADC | Selected internal channels, delayed completion, pending/acknowledgement and interrupt behavior; boot uses labelled synthetic counts |
 | PSRAM | Controller startup commands and bounded RAM backing; 2 MiB capacity and command timing are explicit assumptions |
 | Display | IMD register transfers and RGB565 framebuffer reads, completion and interrupts; a native synthetic guest renders full frames |
+| Audio initialization | Disabled EQ control and bounded scratch memory, coefficient pointer and audio-ADC disable; active processing, sampling and DAC remain unfinished |
 | Auxiliary processor | Limited P11 startup/watchdog behavior modeled at the interface; its separate instruction stream is not executed |
 
 Offline checks include 117 native core cases, 42 PSRAM integration cases,
 75 signed/unsigned stack-byte cases, 26 guarded instruction-scan cases and
 four instruction-fetch cases. Nine additional GPIO-routing/configuration cases
 pass, followed by sixteen initial SD0, twenty-three USB input/configuration and
-fourteen RTC configuration cases. The upstream CPU suite passes 221 cases with
+fourteen RTC configuration cases. Further checks pass 25 SD nonresponse cases,
+all 16 display-divider combinations with timed transfers, 33 EQ/audio-init cases
+and four synthetic display regressions. Portable SD tests cover 11 C scenarios
+and 516 independent timing-oracle cases under memory/undefined-behavior sanitizers.
+The upstream CPU suite passes 221 cases with
 three optional skips. These suites use recorded build identities; they are
 software checks, not that many physical-device comparisons.
 
@@ -52,6 +59,9 @@ USB protocol behavior and full timing accuracy remain unfinished.
 The immediate work is to continue from each unsupported operation until the
 firmware submits its first stock frame. Emulator development runs offline;
 physical measurements are prepared and executed separately.
+The display-divider interpretation follows installed firmware and differs
+from the family SDK. A passive panel capture would help resolve actual clock
+rate and the remaining panel-axis/window mismatch; see the [probe backlog](hardware-probes.md).
 
 ## Published RAM-only fixtures
 
