@@ -80,7 +80,7 @@ sampled before and after the ADC copy.
 
 The oscillator copier also returned to ROM, and its original files, USB
 transactions and complete native instruction stream were independently checked.
-Normal startup after that new probe is still awaiting a separate report. Its
+The owner separately confirmed normal startup after manual restart. Its
 sequential SRAM copy does not prove retention, freshness or the nominal
 reference frequency. An offline run using these two estimates reaches the same
 USB initialization boundary as the nominal-input run; the baseline remains
