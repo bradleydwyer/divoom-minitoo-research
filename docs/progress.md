@@ -15,6 +15,11 @@ Results as of 11 October 2026 are from one physical MiniToo running stock firmwa
 | Decompile and analyse captured firmware | Image inventoried, every application byte checked against the vendor listing, and 1,201 reachable procedures exported through REA; [findings and limits](firmware-analysis.md) |
 | Build an initial offline emulator | PI32v2 CPU model runs small test programs; firmware boot and peripherals are not implemented; [scope and offline checks](emulator.md) |
 | Check a fixed RAM CPU probe against the emulator | All eleven cases and the complete 512-byte result matched |
+| Sample chip revision | `SYSTEM.CHIP_ID = 0x00006903`; revision D by the installed firmware's diagnostic |
+| Measure nested CLI/STI behaviour | Observed save/mask/restore sequence matched the emulator hypothesis; eight sampled caller-state words restored |
+| Read stack-bank prerequisites | Stack limits and mask/configuration words captured; no stack register was written |
+| Compare selected built-in ROM services | Two matching 4,201-byte acquisitions agreed with the reference; whole-ROM identity unproven |
+| Copy retained stock ADC state | VBAT/VBG rings, stored temperature and queue records captured; returned to ROM and subsequent startup reported |
 | Run a RAM-only display attempt | Executed and returned to ROM, but timed out on the first byte; zero completed bytes confirmed and backlight not enabled |
 | Boot normally after the display attempt | Confirmed using the tested manual power-key restart |
 | Install modified firmware | Not attempted |
@@ -45,8 +50,38 @@ The first display program passed its upload, readback and execution checks and r
 
 The attempt changed display peripheral settings, but did not enable the backlight or send a panel reset or initialization sequence. Zero confirmed completed bytes does not prove that no signal reached the panel. Display setup remains under investigation; this result is not a reason to repeat the same attempt or extend its timeout.
 
+## Hardware observations for emulation
+
+Further fixed RAM probes help replace assumptions in the board model with
+observations from the device. These results come from ROM context after
+leaving the stock application. The newer probe implementations and original
+capture evidence are not included in this public source tree.
+
+| Observation | What it establishes, and what it leaves open |
+| --- | --- |
+| Chip ID `0x00006903`, revision D | One full register sample. The revision letter follows the installed diagnostic; it is not a unique device identity. |
+| Nested CLI/STI sequence | Outer CLI saved `ICFG = 0x011d0700` and cleared bit 9; the nested pair kept the masked state, and outer STI restored the entry value. Eight sampled state words matched on return. Other restore-mask bits, IRQ delivery and timing remain unmeasured. |
+| Stack prerequisites | Both sampled limit pairs were `0x00000000..0xffffffff`; `EMU_CON = 3`, `IPMASK = 0`, `GIEMASK = 0`. These raw settings do not establish enforcement, effective masking or safe stack-pointer writes. No stack aliasing test or RTI was performed. |
+| Selected ROM service bytes | Two independent acquisitions of fifteen disjoint spans matched each other and the reference. Coverage is 4,201 of 131,072 bytes; 126,871 bytes, including address zero, remain unknown. No reference bytes were substituted for holes. |
+| Retained ADC rings | Both indices were 9. All sixteen VBAT samples were 337; VBG samples were 255 or 256, with an installed integer mean of 255. These are raw counts, not battery voltages. |
+| Stored temperature and queue | Stored temperature was 1596 firmware-converted millivolts, not raw counts or degrees. Queue channels matched stock initialization, but the temperature queue still held its default value of 1. It is not a usable raw temperature measurement. |
+
+The ADC copier executed once, returned to ROM, and startup after the requested
+manual restart was reported. Original capture files were checked offline and
+backed up privately. The copy was sequential after ROM entry, so freshness,
+atomicity and retention from the running application remain unproven. Caller
+preservation for this leaf rests on its instruction audit; CPU state was not
+sampled before and after the ADC copy.
+
+Next is a separate read-only capture of the stock firmware's stored LRC/RCH
+oscillator calibration values and history. Source locations have been traced;
+the fixed sampler still needs implementation, build and review. This will read
+existing values, without starting a new calibration. Stack writes, RTI and
+TIMER2 pending/acknowledgement/IDLE wake tests still need further probe design.
+
 ## Still to come
 
+- Continue stock firmware boot emulation and use the measured hardware state to check the board model. Prepare the stored oscillator-calibration sampler next.
 - Diagnose the display setup, then demonstrate visible output from RAM code.
 - Close the remaining firmware behaviour and decompiler gaps. The current emulator checks cover a small CPU subset, not a complete MiniToo.
 - Establish and review installation, recovery and rollback paths that do not depend on a working application.

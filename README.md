@@ -20,6 +20,8 @@ Progress as of **11 October 2026**, from one physical MiniToo:
 | [Run custom code from RAM](docs/usb-and-ram.md) | **Succeeded.** Uploaded code, checked its bytes, executed it and verified its result and return to built-in ROM. |
 | [Build an initial emulator](docs/emulator.md) | **Built.** An offline PI32v2 CPU model runs small test programs. It cannot yet boot MiniToo firmware or model its peripherals. |
 | [Check the emulator against the device](docs/emulator.md) | **Succeeded for the tested cases.** Eleven fixed CPU cases matched, including the complete result block. |
+| [Measure hardware state for emulation](docs/progress.md#hardware-observations-for-emulation) | **Captured.** Chip revision, nested CLI/STI behaviour, stack configuration and retained ADC values were sampled on the device. These cover specific observations, not full peripheral behaviour. |
+| [Compare built-in ROM service bytes](docs/progress.md#hardware-observations-for-emulation) | **Partial success.** Two matching reads covered 4,201 bytes and agreed with the reference. Whole-ROM identity remains unproven. |
 | [Full hardware emulation target](docs/emulator.md) | **In progress.** Target: boot unchanged captured firmware 343005 into a live stock display/UI by emulating both PI32v2 cores, memory, interrupts, timers, display, input, storage and the peripherals needed for real firmware operation. |
 | [Browser workbench](docs/workbench.md) | **Built in the research checkout.** Live QEMU display, pause/run/restart and RAM reads checked. Guest button wiring and SD-controller support remain pending; workbench sources are not yet included here. |
 | [Read the main flash](docs/flash-backup.md) | **Succeeded.** Identified the chip and obtained two matching complete 2 MiB reads. |
@@ -32,10 +34,11 @@ Nothing has been flashed. A readable backup does not establish that we can resto
 
 ## What comes next
 
-1. Diagnose the display peripheral setup and get a visible RAM-only demo working.
-2. Fill the remaining gaps in command handling, display/audio, storage and firmware behaviour.
-3. Establish and review installation, recovery and rollback paths before making any persistent change.
-4. Once those paths are established, try a small UI character change, then restore the original and verify normal boot and the restored bytes.
+1. Continue stock firmware boot emulation using measured hardware state. Prepare a read-only capture of stored LRC/RCH oscillator calibration values next; no new command is ready yet.
+2. Diagnose the display peripheral setup and get a visible RAM-only demo working.
+3. Fill the remaining gaps in command handling, display/audio, storage and firmware behaviour.
+4. Establish and review installation, recovery and rollback paths before making any persistent change.
+5. Once those paths are established, try a small UI character change, then restore the original and verify normal boot and the restored bytes.
 
 ## Leaving ROM mode
 
