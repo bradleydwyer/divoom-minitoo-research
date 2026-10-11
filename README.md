@@ -18,7 +18,8 @@ Progress as of **11 October 2026**, from one physical MiniToo:
 | Work | Result |
 | --- | --- |
 | [Run custom code from RAM](docs/usb-and-ram.md) | **Succeeded.** Uploaded code, checked its bytes, executed it and verified its result and return to built-in ROM. |
-| [Compare CPU behaviour with an emulator](docs/emulator.md) | **Succeeded for the tested cases.** Eleven fixed cases matched, including the complete result block. The emulator cannot boot MiniToo firmware or model its peripherals. |
+| [Build an initial emulator](docs/emulator.md) | **Built.** An offline PI32v2 CPU model runs small test programs. It cannot yet boot MiniToo firmware or model its peripherals. |
+| [Check the emulator against the device](docs/emulator.md) | **Succeeded for the tested cases.** Eleven fixed CPU cases matched, including the complete result block. |
 | [Read the main flash](docs/flash-backup.md) | **Succeeded.** Identified the chip and obtained two matching complete 2 MiB reads. |
 | [Leave idle ROM and boot normally](docs/rom-mode.md) | **Succeeded.** The tested power-button procedure returned the device to stock firmware, including after the display attempt below. |
 | Show something using a RAM display program | **Attempted, unsuccessful.** The program ran and returned to ROM, but timed out on the first byte. Zero completed bytes were confirmed; the backlight was not enabled. |

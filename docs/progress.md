@@ -12,7 +12,8 @@ Results as of 11 October 2026 are from one physical MiniToo running stock firmwa
 | Read main-flash ID | `85 60 15`, consistent with Puya 16 Mbit parts |
 | Read first 64 flash bytes twice | Independent chip reads matched |
 | Read ordinary 2 MiB main-flash array twice | Both complete files matched; all 1,024 chunks checked |
-| Compare a fixed RAM CPU probe with the emulator | All eleven cases and the complete 512-byte result matched; [scope and offline checks](emulator.md) |
+| Build an initial offline emulator | PI32v2 CPU model runs small test programs; firmware boot and peripherals are not implemented; [scope and offline checks](emulator.md) |
+| Check a fixed RAM CPU probe against the emulator | All eleven cases and the complete 512-byte result matched |
 | Run a RAM-only display attempt | Executed and returned to ROM, but timed out on the first byte; zero completed bytes confirmed and backlight not enabled |
 | Boot normally after the display attempt | Confirmed using the tested manual power-key restart |
 | Install modified firmware | Not attempted |
