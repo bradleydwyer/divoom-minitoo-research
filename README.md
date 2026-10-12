@@ -1,5 +1,7 @@
 # Divoom MiniToo research
 
+Research into running custom code on the MiniToo in place of its existing firmware, building a full hardware emulator, and developing tools to restore the original firmware.
+
 > [!WARNING]
 > **Work in progress. Use at your own risk.**
 >
@@ -7,30 +9,35 @@
 >
 > **Please don't rush into running the live tools yet.** Read the linked notes and understand the risks first. RAM-only code and read-only flash operations are not risk-free.
 
-Getting custom code running on a MiniToo, while keeping it working.
-
-**Custom code runs from RAM. Both the 2 MiB main flash and the separate 120 MiB SD0 logical storage have been read twice with matching results.** The tested unit runs stock firmware **343005** and uses Jieli's PI32v2 architecture. The earlier [MiniToo Forth work](https://tangled.org/antiali.as/minitoo-forth) targeted a different hardware/firmware family.
-
 ## Where things stand
 
 Progress as of **13 October 2026**, covering one physical MiniToo and offline emulation:
 
-| Work | Result |
-| --- | --- |
-| [Run custom code from RAM](docs/usb-and-ram.md) | **Succeeded.** Uploaded code, checked its bytes, executed it and verified its result and return to built-in ROM. |
-| [Build an initial emulator](docs/emulator.md) | **Built.** The published RAM-only fixtures run small PI32v2 test programs. A separate BR28 board model now executes stock startup and models the peripherals needed so far. |
-| [Check the emulator against the device](docs/emulator.md) | **Succeeded for the tested cases.** Three new campaigns totaling 9,940 CPU cases match native emulator replay after corrections, extending the earlier CPU/trim and 28-program edge results. This is finite instruction coverage, not a complete ISA qualification. |
-| [Measure hardware state for emulation](docs/progress.md#hardware-observations-for-emulation) | **Captured.** Chip revision, nested CLI/STI behaviour, stack configuration, retained ADC values and stored oscillator estimates were sampled on the device. These cover specific observations, not full peripheral behaviour. |
-| [Compare built-in ROM service bytes](docs/progress.md#hardware-observations-for-emulation) | **Partial success.** Two matching reads covered 4,201 bytes and agreed with the reference. Whole-ROM identity remains unproven. |
-| [Full hardware emulation target](docs/emulator.md#stock-firmware-emulation-in-the-research-checkout) | **Stock clock and menu reached.** Unchanged firmware mounts captured SD0 content, passes Bluetooth initialization under explicit no-peer inputs and draws its own clock face. After a source-qualified CPU fix, centre-stick input reaches a rendered menu. Startup reliability, interactive speed and broader UI behavior remain unfinished. |
-| [Emulated display](docs/emulator.md#stock-firmware-emulation-in-the-research-checkout) | **Stock clock graphics render.** An explicit display DMA byte-order profile corrects the previously scrambled palette. One replay completes 272 display transfers without a CPU or MMIO fault. Exact physical colors, orientation and bus timing remain unqualified. |
-| [Browser workbench](docs/workbench.md) | **Built in the research checkout.** Live display, separate modeled-device/session-wall clocks, uncapped interactive runs and selected GPIO inputs. Checkpoint save/restore is implemented experimentally and still under validation. Performance is too slow for comfortable interaction; analog buttons, removable-card integration and browser audio remain unfinished. Full sources are not yet included here. |
-| [Read the main flash](docs/flash-backup.md) | **Succeeded.** Identified the chip and obtained two matching complete 2 MiB reads. |
-| [Back up separate SD0 content](docs/storage-backup.md) | **Succeeded for the exposed logical area.** Two complete 120 MiB images match, with no holes or changed sectors. A private off-machine backup was downloaded and verified. Physical part identity, other areas and restoration remain unproven. |
-| [Decompile and analyse the captured firmware](docs/firmware-analysis.md) | **Analysis pass completed.** REA exported 1,201 reachable procedures, and every application byte was checked against the vendor listing. Complete behavioural reverse engineering remains unfinished. |
-| [Leave idle ROM and boot normally](docs/rom-mode.md) | **Succeeded.** The tested power-button procedure returned the device to stock firmware, including after the display attempt below. |
-| Show something using a RAM display program | **Attempted, unsuccessful.** The program ran and returned to ROM, but timed out on the first byte. Zero completed bytes were confirmed; the backlight was not enabled. |
-| Install modified firmware, then restore the original | **Not attempted.** Installation, recovery from broken firmware and restoration remain unproven. |
+<table>
+  <colgroup>
+    <col width="28%">
+    <col width="72%">
+  </colgroup>
+  <thead>
+    <tr><th width="28%">Work</th><th>Result</th></tr>
+  </thead>
+  <tbody>
+    <tr><td width="28%"><a href="docs/usb-and-ram.md">Run custom code from RAM</a></td><td><strong>Succeeded.</strong> Uploaded code, checked its bytes, executed it and verified its result and return to built-in ROM.</td></tr>
+    <tr><td width="28%"><a href="docs/emulator.md">Build an initial emulator</a></td><td><strong>Built.</strong> The published RAM-only fixtures run small PI32v2 test programs. A separate BR28 board model now executes stock startup and models the peripherals needed so far.</td></tr>
+    <tr><td width="28%"><a href="docs/emulator.md">Check the emulator against the device</a></td><td><strong>Succeeded for the tested cases.</strong> Three new campaigns totaling 9,940 CPU cases match native emulator replay after corrections, extending the earlier CPU/trim and 28-program edge results. This is finite instruction coverage, not a complete ISA qualification.</td></tr>
+    <tr><td width="28%"><a href="docs/progress.md#hardware-observations-for-emulation">Measure hardware state for emulation</a></td><td><strong>Captured.</strong> Chip revision, nested CLI/STI behaviour, stack configuration, retained ADC values and stored oscillator estimates were sampled on the device. These cover specific observations, not full peripheral behaviour.</td></tr>
+    <tr><td width="28%"><a href="docs/progress.md#hardware-observations-for-emulation">Compare built-in ROM service bytes</a></td><td><strong>Partial success.</strong> Two matching reads covered 4,201 bytes and agreed with the reference. Whole-ROM identity remains unproven.</td></tr>
+    <tr><td width="28%"><a href="docs/emulator.md#stock-firmware-emulation-in-the-research-checkout">Full hardware emulation target</a></td><td><strong>Stock clock and menu reached.</strong> Unchanged firmware mounts captured SD0 content, passes Bluetooth initialization under explicit no-peer inputs and draws its own clock face. After a source-qualified CPU fix, centre-stick input reaches a rendered menu. Startup reliability, interactive speed and broader UI behavior remain unfinished.</td></tr>
+    <tr><td width="28%"><a href="docs/emulator.md#stock-firmware-emulation-in-the-research-checkout">Emulated display</a></td><td><strong>Stock clock graphics render.</strong> An explicit display DMA byte-order profile corrects the previously scrambled palette. One replay completes 272 display transfers without a CPU or MMIO fault. Exact physical colors, orientation and bus timing remain unqualified.</td></tr>
+    <tr><td width="28%"><a href="docs/workbench.md">Browser workbench</a></td><td><strong>Built in the research checkout.</strong> Live display, separate modeled-device/session-wall clocks, uncapped interactive runs and selected GPIO inputs. Checkpoint save/restore is implemented experimentally and still under validation. Performance is too slow for comfortable interaction; analog buttons, removable-card integration and browser audio remain unfinished. Full sources are not yet included here.</td></tr>
+    <tr><td width="28%"><a href="docs/flash-backup.md">Read the main flash</a></td><td><strong>Succeeded.</strong> Identified the chip and obtained two matching complete 2 MiB reads.</td></tr>
+    <tr><td width="28%"><a href="docs/storage-backup.md">Back up separate SD0 content</a></td><td><strong>Succeeded for the exposed logical area.</strong> Two complete 120 MiB images match, with no holes or changed sectors. A private off-machine backup was downloaded and verified. Physical part identity, other areas and restoration remain unproven.</td></tr>
+    <tr><td width="28%"><a href="docs/firmware-analysis.md">Decompile and analyse the captured firmware</a></td><td><strong>Analysis pass completed.</strong> REA exported 1,201 reachable procedures, and every application byte was checked against the vendor listing. Complete behavioural reverse engineering remains unfinished.</td></tr>
+    <tr><td width="28%"><a href="docs/rom-mode.md">Leave idle ROM and boot normally</a></td><td><strong>Succeeded.</strong> The tested power-button procedure returned the device to stock firmware, including after the display attempt below.</td></tr>
+    <tr><td width="28%">Show something using a RAM display program</td><td><strong>Attempted, unsuccessful.</strong> The program ran and returned to ROM, but timed out on the first byte. Zero completed bytes were confirmed; the backlight was not enabled.</td></tr>
+    <tr><td width="28%">Install modified firmware, then restore the original</td><td><strong>Not attempted.</strong> Installation, recovery from broken firmware and restoration remain unproven.</td></tr>
+  </tbody>
+</table>
 
 Nothing has been flashed. A readable backup does not establish that we can restore it. The button procedure has been tested from idle ROM; recovery from arbitrary hung code or damaged firmware is still unproven. See [detailed progress](docs/progress.md) for the checks and their limits.
 
