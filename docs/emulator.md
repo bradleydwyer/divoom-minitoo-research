@@ -83,6 +83,25 @@ The final build passes the same 264 exact device comparisons and all eleven
 checkpoint continuation scenarios, plus a regression that rejects live checkpoint
 layout inspection until execution is paused.
 
+A further performance pass removes lock/unlock calls from instructions that do
+not need to synchronize with devices, and avoids advancing unchanged peripherals
+for status reads before their next event. The combined implementation has passed
+439 exact device comparisons, including complete reports and display/audio
+bytes. Separate timer-count and per-sample DMA oracles also pass. Compiler
+profile optimization is being evaluated on both startup and a continuation from
+the running clock screen; these measured workloads do not establish real-time
+performance or gains across every menu and application.
+
+The combined checkpoint tests exposed an idle-time race in the host scheduler:
+a core could halt before the board published its wakeup timer, letting QEMU
+advance virtual time to a 100 ms scheduler deadline. A MiniToo-specific timer
+classification fix passes twenty fresh-process restores of that case with exact
+clock and device-state equality. This is separate from the unresolved P11
+firmware race described above. The corrected combined build is now running in the local workbench. It also
+passes twelve checkpoint/guard scenarios, seven concurrent-control scenarios
+and thirty instruction-budget, scheduling, interrupt and polling checks. The
+compiler-tuned build still needs validation before deployment.
+
 Same-build checkpoint save/restore is available in the local workbench. Eleven
 continuation scenarios, each restored twice into fresh processes, cover CPU,
 repeat, timer, lock, P11, memory-map, display, storage and audio state. A stock
