@@ -28,7 +28,7 @@ The workbench does not automatically pick up a new emulator build.
 | Restart | Starts a fresh owned QEMU process, paused at the configured entry point. |
 | Clocks | Displays accumulated modeled device time separately from elapsed wall time of the host session. Model seconds are not calibrated physical seconds. |
 | Run limit | Interactive sessions can run without an instruction cutoff; fault checks remain active. This does not resolve a deadlock. |
-| Checkpoints | Experimental save/resume controls and a native same-build codec are under validation. Early stock-startup and selected synthetic roundtrips pass; broader coverage and deployment remain unfinished. |
+| Checkpoints | Same-build save/resume is available. Eleven fresh-process continuation scenarios and stock-startup restoration pass; broader firmware-state coverage remains unfinished. Saves require the exact executable and inputs. |
 | Ten-second reset | A cancellable ten-second hold that triggers the same process restart. Physical power/reset circuitry is not modelled by this gesture. |
 | RAM inspector | Reads internal RAM through QMP while paused. |
 | Joystick and six buttons | An explicit GPIO profile connects the five joystick contacts and logical button 1. Analog buttons 2–6 remain disabled in that profile. |

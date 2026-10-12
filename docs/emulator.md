@@ -75,6 +75,14 @@ variation, and the emulator remains slower than real time. Exact synthetic
 comparisons cover 264 cases plus sample-by-sample RAM/PCM checks. Guest
 instructions, clock units and the CPU scheduling quantum are unchanged.
 
+The next deployed build also reuses unchanged deadlines, avoids repeated board
+type checks and skips unchanged memory-map transactions. Three-run medians for
+100 million stock-startup instructions improved from 8.259 to 7.108 seconds,
+about 14% less wall time. These timings retain host-load and scheduling variation.
+The final build passes the same 264 exact device comparisons and all eleven
+checkpoint continuation scenarios, plus a regression that rejects live checkpoint
+layout inspection until execution is paused.
+
 Same-build checkpoint save/restore is available in the local workbench. Eleven
 continuation scenarios, each restored twice into fresh processes, cover CPU,
 repeat, timer, lock, P11, memory-map, display, storage and audio state. A stock
