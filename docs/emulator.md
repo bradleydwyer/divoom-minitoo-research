@@ -83,24 +83,45 @@ The final build passes the same 264 exact device comparisons and all eleven
 checkpoint continuation scenarios, plus a regression that rejects live checkpoint
 layout inspection until execution is paused.
 
-A further performance pass removes lock/unlock calls from instructions that do
-not need to synchronize with devices, and avoids advancing unchanged peripherals
-for status reads before their next event. The combined implementation has passed
-439 exact device comparisons, including complete reports and display/audio
-bytes. Separate timer-count and per-sample DMA oracles also pass. Compiler
-profile optimization is being evaluated on both startup and a continuation from
-the running clock screen; these measured workloads do not establish real-time
-performance or gains across every menu and application.
+The latest build combines device-lock ownership, cheaper unchanged peripheral
+reads, contiguous memory-map aliases, guarded direct MMIO dispatch and compiler
+profile optimization. It is now running in the local workbench. Three alternating
+repetitions per build produced these median wall times:
 
-The combined checkpoint tests exposed an idle-time race in the host scheduler:
+| Fixed 100-million-instruction workload | Earlier deployed build | Intermediate combined build | Final optimized build |
+| --- | ---: | ---: | ---: |
+| Stock startup prefix | 7.097 s | 4.839 s | 3.732 s |
+| Continuation from a rendered clock screen | Incompatible checkpoint format | 4.969 s | 3.709 s |
+
+Startup throughput improved 1.90× against the earlier deployed build. Clock-screen
+throughput improved 1.34× against the intermediate build. The baselines differ;
+the ratios must not be multiplied. All compared frames match within each workload.
+Full startup reports vary across repeats as well as builds, and clock-continuation
+reports retain scheduling-counter differences. These finite workloads were
+represented in the compiler training profile. The result does not establish
+real-time speed or uniform gains across every menu and application.
+
+The final executable passes 439 exact device comparisons, including complete
+reports and display/audio bytes, plus eight independent timer-count and two
+per-sample DMA oracles. It also passes twelve checkpoint/guard scenarios, seven
+concurrent-control scenarios, thirty instruction-budget/scheduling/interrupt/polling
+checks, and nine direct-MMIO boundary, debugger and trace cases.
+
+Combined checkpoint testing exposed an idle-time race in the host scheduler:
 a core could halt before the board published its wakeup timer, letting QEMU
 advance virtual time to a 100 ms scheduler deadline. A MiniToo-specific timer
 classification fix passes twenty fresh-process restores of that case with exact
 clock and device-state equality. This is separate from the unresolved P11
-firmware race described above. The corrected combined build is now running in the local workbench. It also
-passes twelve checkpoint/guard scenarios, seven concurrent-control scenarios
-and thirty instruction-budget, scheduling, interrupt and polling checks. The
-compiler-tuned build still needs validation before deployment.
+firmware race described above.
+
+
+The workbench separates **Emulated time** from **Wall time**. The former follows
+the virtual clock: currently 8 ns per aggregate retired instruction across both
+main CPUs, plus advancement while both sleep. This is an assumed timing model,
+not a calibrated estimate of seconds on the physical MiniToo. Wall time is real
+elapsed session time on the host, including pauses. The older "Session time"
+field displayed wall time. Optimization changes host throughput without
+establishing physical timing accuracy.
 
 Same-build checkpoint save/restore is available in the local workbench. Eleven
 continuation scenarios, each restored twice into fresh processes, cover CPU,
