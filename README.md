@@ -1,6 +1,6 @@
 # Divoom MiniToo research
 
-Research into running custom code on the MiniToo in place of its existing firmware, building a full hardware emulator, and developing tools to restore the original firmware.
+Research into running custom code on the [MiniToo](https://divoom.com/products/minitoo) in place of its existing firmware, building a full hardware emulator, and developing tools to restore the original firmware.
 
 > [!WARNING]
 > **Work in progress. Use at your own risk.**
