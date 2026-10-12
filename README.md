@@ -9,23 +9,24 @@
 
 Getting custom code running on a MiniToo, while keeping it working.
 
-**Custom code runs from RAM, and we have read the complete 2 MiB main flash twice with matching results.** The tested unit runs stock firmware **343005** and uses Jieli's PI32v2 architecture. The earlier [MiniToo Forth work](https://tangled.org/antiali.as/minitoo-forth) targeted a different hardware/firmware family.
+**Custom code runs from RAM. Both the 2 MiB main flash and the separate 120 MiB SD0 logical storage have been read twice with matching results.** The tested unit runs stock firmware **343005** and uses Jieli's PI32v2 architecture. The earlier [MiniToo Forth work](https://tangled.org/antiali.as/minitoo-forth) targeted a different hardware/firmware family.
 
 ## Where things stand
 
-Progress as of **11 October 2026**, covering one physical MiniToo and offline emulation:
+Progress as of **12 October 2026**, covering one physical MiniToo and offline emulation:
 
 | Work | Result |
 | --- | --- |
 | [Run custom code from RAM](docs/usb-and-ram.md) | **Succeeded.** Uploaded code, checked its bytes, executed it and verified its result and return to built-in ROM. |
 | [Build an initial emulator](docs/emulator.md) | **Built.** The published RAM-only fixtures run small PI32v2 test programs. A separate BR28 board model now executes stock startup and models the peripherals needed so far. |
-| [Check the emulator against the device](docs/emulator.md) | **Succeeded for the tested cases.** The earlier eleven cases and ten-program batch match. A further 28-program CPU-edge batch exposed flag discrepancies; corrections now match all 28 complete result blocks and 444 decoded fields. These are finite instruction samples. |
+| [Check the emulator against the device](docs/emulator.md) | **Succeeded for the tested cases.** Three new campaigns totaling 9,940 CPU cases match native emulator replay after corrections, extending the earlier CPU/trim and 28-program edge results. This is finite instruction coverage, not a complete ISA qualification. |
 | [Measure hardware state for emulation](docs/progress.md#hardware-observations-for-emulation) | **Captured.** Chip revision, nested CLI/STI behaviour, stack configuration, retained ADC values and stored oscillator estimates were sampled on the device. These cover specific observations, not full peripheral behaviour. |
 | [Compare built-in ROM service bytes](docs/progress.md#hardware-observations-for-emulation) | **Partial success.** Two matching reads covered 4,201 bytes and agreed with the reference. Whole-ROM identity remains unproven. |
-| [Full hardware emulation target](docs/emulator.md#stock-firmware-emulation-in-the-research-checkout) | **In progress.** Unchanged 343005 startup runs both main cores, enters the scheduler, mounts its flash filesystem and starts app/UI/LVGL tasks with explicit model inputs. The recorded run transfers six full frames, including the embedded HOT-heart fallback for missing startup content, and consumes synthetic microphone silence through the installed audio ring. The recorded six-frame checkpoint reaches two billion instructions and passes the earlier P11 reply/shared-lock stall under an explicit scheduling profile. Full UI behavior and complete firmware operation remain unfinished. |
-| [Emulated display](docs/emulator.md#stock-firmware-emulation-in-the-research-checkout) | **Stock graphics now render.** Synthetic PI32v2 guests and unchanged stock firmware transfer complete frames through modeled IMD registers. The saved HOT-heart is an embedded fallback for missing `power_on.gif`; separate SD0 C/D content has not been captured. Color accuracy and physical panel orientation remain unproven. This is separate from the unsuccessful physical display attempt below. |
-| [Browser workbench](docs/workbench.md) | **Built in the research checkout.** Live QEMU display, pause/run/restart and RAM reads checked. A GPIO joystick/button-1 bridge has been checked; analog buttons and SD-controller support remain pending. Workbench sources are not yet included here. |
+| [Full hardware emulation target](docs/emulator.md#stock-firmware-emulation-in-the-research-checkout) | **In progress.** Unchanged startup mounts the captured SD0 content and opens its own assets. A functional DAC model consumes 244,192 stereo PCM frames alongside microphone capture. After startup power release, the web replay reaches Bluetooth/RF initialization and stops at an unmodeled wireless register. The clock face and interactive menu remain unverified. |
+| [Emulated display](docs/emulator.md#stock-firmware-emulation-in-the-research-checkout) | **Stock graphics render.** The image-backed run advances the battery animation through 58 full display transfers; the later web replay reaches 63 before the wireless stop. The earlier HOT-heart was a missing-content fallback. Physical color/orientation and the ordinary startup sequence remain unqualified. |
+| [Browser workbench](docs/workbench.md) | **Built in the research checkout.** Live QEMU display, pause/run/restart, RAM reads, startup power release and selected GPIO inputs checked. Internal SD0 uses a read-only captured image; analog buttons, removable-card integration and browser audio remain unfinished. Workbench and full BR28 sources are not yet included here. |
 | [Read the main flash](docs/flash-backup.md) | **Succeeded.** Identified the chip and obtained two matching complete 2 MiB reads. |
+| [Back up separate SD0 content](docs/storage-backup.md) | **Succeeded for the exposed logical area.** Two complete 120 MiB images match, with no holes or changed sectors. A private off-machine backup was downloaded and verified. Physical part identity, other areas and restoration remain unproven. |
 | [Decompile and analyse the captured firmware](docs/firmware-analysis.md) | **Analysis pass completed.** REA exported 1,201 reachable procedures, and every application byte was checked against the vendor listing. Complete behavioural reverse engineering remains unfinished. |
 | [Leave idle ROM and boot normally](docs/rom-mode.md) | **Succeeded.** The tested power-button procedure returned the device to stock firmware, including after the display attempt below. |
 | Show something using a RAM display program | **Attempted, unsuccessful.** The program ran and returned to ROM, but timed out on the first byte. Zero completed bytes were confirmed; the backlight was not enabled. |
@@ -35,7 +36,7 @@ Nothing has been flashed. A readable backup does not establish that we can resto
 
 ## What comes next
 
-1. Continue stock firmware boot emulation using measured hardware state. Prepare a [batch of hardware observations](docs/hardware-probes.md), reusing the completed CPU/trim and 28-program CPU-edge batches. Remaining flag discriminators, SD/pin context and passive panel capture remain useful.
+1. Continue stock firmware boot emulation through the reached Bluetooth/RF initialization path, using preserved sources and completed CPU measurements. Qualify audio decoder completion and then work toward the clock face and interactive UI. The [hardware backlog](docs/hardware-probes.md) distinguishes remaining measurements from completed batches; another hardware run is not yet needed for the current investigation.
 2. Diagnose the display peripheral setup and get a visible RAM-only demo working.
 3. Fill the remaining gaps in command handling, display/audio, storage and firmware behaviour.
 4. Establish and review installation, recovery and rollback paths before making any persistent change.
@@ -50,10 +51,11 @@ After a live tool has finished, hold the **front-left orange power button for ab
 - [Progress](docs/progress.md): what has worked on the physical MiniToo.
 - [Firmware analysis](docs/firmware-analysis.md): the completed decompilation and analysis pass, its findings and remaining gaps.
 - [Offline emulator checks](docs/emulator.md): small CPU tests, results from the MiniToo, and how to reproduce them without a device.
-- [Browser workbench](docs/workbench.md): local screen/control tools, their QEMU connection, and the remaining guest input and SD work.
+- [Browser workbench](docs/workbench.md): local screen/control tools, their QEMU connection, and remaining input, removable-storage and audio work.
 - [USB and RAM](docs/usb-and-ram.md): how small programs reach the device and return.
 - [Leaving ROM mode](docs/rom-mode.md): the tested button procedure and how to check normal USB has returned.
 - [Flash backup](docs/flash-backup.md): the backup path, operation and limits.
+- [Separate storage backup](docs/storage-backup.md): the matching SD0 images, recovered startup assets and read-only emulator integration.
 - [Technical notes](docs/technical-notes.md): memory bounds, checks and builds.
 - [References](docs/references.md): earlier work, sources and specifications.
 

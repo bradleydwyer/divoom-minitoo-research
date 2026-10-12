@@ -1,142 +1,123 @@
 # MiniToo emulation and offline checks
 
-The research checkout now renders recognizable graphics from unchanged stock
-firmware 343005. Complete boot and full UI behavior remain unfinished. The public
-source tree currently distributes the earlier RAM-only fixtures; the newer
-BR28 board model and [browser workbench](workbench.md) are not yet included here.
+The research emulator now runs unchanged firmware 343005 with its captured
+SD0 content, advances a battery animation and consumes guest-produced PCM.
+After startup power release it reaches Bluetooth/RF initialization, where an
+unmodeled wireless register stops execution. **The clock face and interactive
+menu are not yet demonstrated.** Results below are current to 12 October 2026.
+
+The public source tree distributes the earlier RAM-only fixtures. The full
+BR28 board model and [browser workbench](workbench.md) remain in the private
+research checkout; the build instructions below do not build that full system.
 
 ## Stock firmware emulation in the research checkout
 
-The unchanged captured application initializes RAM, passes its startup CRC,
-prints diagnostics, starts both main cores, enters the scheduler and mounts
-its flash filesystem. It also passes modeled oscillator capture, board power
-setup, TIMER2 waits, ADC initialization and PSRAM initialization. The recorded
-six-frame checkpoint uses declared input states and an explicit scheduling
-quantum, and reaches its instruction budget.
-GPIO routing, USB detection setup, RTC clock selection,
-SD initialization retries and disabled EQ/audio-ADC initialization now pass.
-The SD driver executes its own timeout/offline paths under an explicit
-nonresponding-controller profile. Audio decoder/output tasks are created;
-DAC configuration and six key inputs now pass. With explicitly released
-analog keys, a held power button and the reached
-SD1 offline input branch, app/UI/LVGL tasks start and the first IMD
-sleep-out command is sent. An explicit static RTC snapshot and bounded PWM
-configuration then pass. Stock submits six complete 20,480-pixel frames, totaling 122,880 pixels.
-The first is uniformly pale in the current model; the second is black.
-The saved five-color HOT-heart is an embedded fallback selected when
-`storage/sd0/D/power_on.gif` cannot be opened. Independent decoding of that
-embedded asset reproduces the complete saved model frame. The firmware also
-reports missing stored configuration and startup audio. The separate SD0 C/D
-content volumes have not been captured; the two-megabyte program-flash backup
-is not their image. SD0 does not necessarily mean the removable microSD slot.
-Color packing and physical panel orientation remain unqualified; model-exported
-colors are not measured physical colors.
+The captured application initializes RAM, passes its startup CRC, starts both
+main cores and the scheduler, and mounts its flash filesystem. The SD0 model
+now reads a separate, read-only copy of the [verified storage image](storage-backup.md).
+Unchanged firmware mounts its C/D volumes and opens its own assets. The earlier
+HOT-heart was an embedded fallback for missing startup content; it was not
+proof of the ordinary physical boot sequence.
 
-The owner reports normal physical startup as an approximately three-second
-power-button hold, an animated Divoom logo on black, further animations and
-sounds, then a clock face. HOT-heart was not part of that sequence. Battery
-animation was mainly seen after a long reset, rather than in the latest normal
-power-off/on cycle. These are operator observations, not measured timing.
+A completed run at 900 million aggregate instructions performs **58 full display
+transfers** and advances the battery animation. The functional DAC sink consumes
+**244,192 stereo signed16 frames (976,768 PCM bytes)**, about 5.537 seconds at the
+explicitly supplied 44,100 Hz rate. Audio ADC capture continues independently
+with synthetic microphone silence. Input firmware/storage hashes remain
+unchanged after execution. This run stops at its configured instruction budget.
 
-Startup prints `divoom finish to init!`, passes common and channel0 microphone
-configuration, and consumes synthetic mono silence through its audio ring.
-That recorded run supplies 517,325 synthetic samples, with 1,010 watermark
-consumptions and 2,020 acknowledgements completed. It reaches its two-billion
-instruction budget without a CPU or MMIO fault, with 623,360 balanced IRQ entries
-and returns. The shared lock is free at the stop.
+The subsequent web replay releases its startup power input, reaches the
+Bluetooth task and RF initialization, and stops on an unmodeled word read of
+**`JL_WL.CON0` at `0x00fe2100`**. It reaches 63 display transfers, with the same
+number of consumed DAC frames; the final frame is black. The next task is to
+qualify this wireless initialization path against preserved source evidence.
+No additional hardware run is needed until a specific ambiguity is identified.
 
-The earlier P11 reply/shared-lock stall is passed under an explicit scheduling
-policy that yields after four retired instructions while both cores can run.
-The policy preserves every instruction and its side effects.
-Native controls check exactly-once RAM/CRC effects, blocked-peer handling and
-IRQ return state. This qualifies the tested emulator profile, not physical
-parallel timing or universal race prevention: larger tested quantums still lose
-some synthetic reply-race phases. Complete boot and full UI behavior remain
-unfinished.
+PCM consumption does not establish faithful sound reproduction. The firmware
+also reports decoder error code 33, whose meaning is still under investigation.
+The sink captures samples before modeled gain; it does not establish physical
+analog output or clock accuracy. Browser audio playback is not implemented.
 
-The input comparisons matter: unknown PB9 leaves a startup placeholder that
-selects product test; released PB9 with no held power key selects power-off.
-Holding PB1 passes the firmware's 71-sample startup gate. These are declared
-emulated input states, not newly measured button voltages.
+## CPU measurements and coverage
 
-Later separate replays release PB1 and verify that joystick inputs pass the
-firmware scanner and debounce. An accepted long joystick press reaches a mode
-change request, which the current application state refuses; no menu transition
-is demonstrated. The workbench now supports a GPIO profile with automatic
-startup release and six connected controls. Analog buttons remain unavailable.
+Three new hardware campaigns have been integrated and replayed natively:
 
-| Area | Implemented scope |
+| Campaign | Measured cases | Main scope |
+| --- | ---: | --- |
+| Storage-path CPU | 1,680 | Selected E1DF/E19C/E1DE/E078 shifts, bitfields and related forms |
+| Memory CPU | 2,292 | Signed memory operations, address updates and selected aliases |
+| Consolidated supplement | 5,968 | Rounding/saturation, scalar and pair shifts, carry discriminators, stride/DSP memory forms, flags, bounded REP/parallel contexts and finite floating point |
+| **Total** | **9,940** | **All measured cases match native replay after corrections** |
+
+These extend the earlier eleven-case CPU probe, ten-program CPU/trim set and
+28-program CPU-edge batch. Normal startup after each new batch's final manual
+restart was separately confirmed. Replay checks registers/PSR and the bounded
+operand areas for stores. The supplement resolves the sampled large-count
+logical-shift and pair-subtract carry questions previously listed as open.
+
+The inherited PI32v2 engine provided a useful base, but did not implement every
+BR28 form or its flags correctly. Some acquisition labels also proved misleading:
+selected forms labelled rotate-left saturate a signed left shift. Corrections
+are selected by the BR28 CPU profile, without firmware-address or asset-content
+hooks. A later signed-offset memory OR correction uses preserved source and
+vendor decoding rather than a new hardware measurement.
+
+The reviewed-root static instruction census now has zero rejected sites, down
+from 53. This is decode coverage of those paths, not full ISA or firmware
+coverage: indirect targets, dynamic code, unreviewed paths and semantic errors
+remain possible. Finite floating-point samples do not qualify NaNs, exceptions
+or all rounding modes. Timing, faults and unmeasured modes remain separate work.
+
+## Board models and validation
+
+| Area | Implemented scope and main limits |
 | --- | --- |
-| CPU and memory | PI32v2 execution, two main cores, internal RAM, reference ROM, MMU aliases, functional interrupts and hardware locks |
-| Timers and clocks | Core tick and the timer/capture paths used so far, with explicitly supplied clock inputs and functional timing |
-| Storage | SPI0 reads from the captured program flash, a mapped flash-data window and its stock filesystem mount; separate SD0 C/D content remains unavailable |
-| SD0 | Configuration and checked command snapshots under an explicit nonresponding profile; genuine guest timeout/offline paths execute; no card responses, data transfers or interrupts |
-| USB0 | Explicit disconnected-peer input profile for connection-detection setup; no packet transfer, SIE completion or USB interrupts |
-| RTC | Bounded oscillator/clock configuration and an explicit static five-byte time snapshot with delayed completion; no advancing calendar, alarm or time-setting |
-| ADC | Selected internal channels and external PB9, delayed completion, pending/acknowledgement and interrupt behavior; normal startup uses labelled synthetic internal counts and a separate released PB9 input |
-| PSRAM | Controller startup commands and bounded RAM backing; 2 MiB capacity and command timing are explicit assumptions |
-| Display | IMD transfers, RGB565 framebuffer reads, completion and interrupts; synthetic guests render full frames, and stock has transferred six frames including a recognizable graphic; inactive PAP/RGB status reads let the shared ISR return |
-| PWM setup | Reached timer0/channel0 configuration retained; no running counter, waveform or interrupt |
-| Audio initialization and capture | Disabled EQ control and bounded scratch memory, coefficient pointer, DAC clock/gains and common/channel0 microphone configuration; explicit mono silence feeds the audio ring with watermark interrupts and separate acknowledgement/consumption; physical sampling, active DAC playback and general audio processing remain unfinished |
-| Auxiliary processor | Limited P11 startup/watchdog behavior modeled at the interface; its separate instruction stream is not executed |
+| CPU and memory | Two PI32v2 main cores, internal RAM, reference ROM, MMU aliases, functional interrupts and hardware locks; some reset, fault and concurrency rules remain assumed |
+| Timers and clocks | Reached timer/capture paths with explicitly supplied clock inputs and functional timing; no physical timing qualification |
+| Storage | Captured program flash and read-only SD0 image, guest filesystem mounts and content reads; removable-card workbench integration remains unfinished |
+| USB0 | Explicit disconnected-peer detection profile; no packet transfer or general USB protocol model |
+| RTC | Bounded configuration and static time snapshot with delayed completion; no advancing calendar or alarm |
+| Internal ADC and inputs | Selected channels, external PB9, completion/IRQ handling and explicit startup inputs; joystick/button-1 GPIO delivery checked, analog buttons unavailable |
+| PSRAM | Startup commands and bounded RAM backing; capacity and timing remain explicit assumptions |
+| Display | IMD transfers, RGB565 framebuffer, completion and interrupts; physical color, orientation and bus timing remain unqualified |
+| PWM | Reached timer/channel configuration retained; no waveform generation |
+| Audio ADC | Synthetic mono silence, ring accounting, watermark IRQ and separate acknowledgement/consumption |
+| Audio DAC | Signed16 mono/stereo SRAM DMA ring, producer/free-space accounting, wrap, enable/clock gating, pending/acknowledgement and shared ADC/DAC IRQ; explicit sample rate and bounded local PCM sink |
+| Auxiliary processor | Limited P11 interface behavior; its separate instruction stream is not executed |
+| Wireless | Current RF initialization boundary; reached register semantics still need qualification |
 
-Offline checks include 118 native core cases, 42 PSRAM integration cases,
-75 signed/unsigned stack-byte cases, 26 guarded instruction-scan cases and
-four instruction-fetch cases. Nine additional GPIO-routing/configuration cases
-pass, followed by sixteen initial SD0, twenty-three USB input/configuration and
-fourteen RTC configuration cases. Further checks pass 25 SD nonresponse cases,
-all 16 display-divider combinations with timed transfers, 33 EQ/audio-init cases
-and four synthetic display regressions. Portable SD tests cover 11 C scenarios
-and 516 independent timing-oracle cases under memory/undefined-behavior sanitizers.
-Further targeted checks pass 30 RTC snapshot guests, seven invalid machine
-configurations, eight runner input checks, 49 PWM configuration cases,
-22 inactive display-interface cases and 21 common microphone configuration cases.
-Channel0 microphone setup adds 41 native cases; synthetic audio capture adds
-36 native cases plus 21 portable scenarios and 1,505 timing-oracle cases with
-sanitizers. Pair multiply-subtract support passes 506 focused native cases. Its earlier
-flag-preservation policy has been superseded by finite hardware observations;
-general carry behavior beyond those samples remains partly inferred.
-The RTC host tests include 680 timing-oracle cases with sanitizers; display
-checks retain strict rejection of invalid pixel/frame accesses while allowing
-the empty initialization command. The upstream CPU suite passes 221 cases with
-three optional skips. These suites use recorded build identities; they are
-software checks, not that many physical-device comparisons.
+The DAC change passes 17 native guest tests and 36 native ADC regression guests.
+Checks include exact PCM bytes/order, ring wrap, real interrupt entry/return,
+MMU aliases and invalid-access refusals. Portable DAC/ADC suites also pass with
+AddressSanitizer and UndefinedBehaviorSanitizer, including 250 DAC and 1,505 ADC
+timing-oracle cases. These are offline software checks, not additional physical
+measurements. The workbench backend, core and runner tests pass as well.
 
-A new eleven-job hardware batch collected cached trim and ten CPU programs.
-The corrected BR28 profile matches all ten complete 512-byte CPU blocks and
-118 named fields. The initial model matched seven blocks; fixes address selected
-shift/multiply/divide flags and TESTSET writes. Eighteen separate model-policy
-cases check unsampled behavior without claiming physical agreement. The owner
-confirmed normal startup after the whole batch.
+An explicit four-instruction scheduling quantum passes the earlier P11
+reply/shared-lock stall while preserving instruction side effects. It does not
+establish physical multicore timing or universal race prevention. Only 4,201 of
+the reference ROM's 131,072 bytes have been matched to this unit.
 
-A further 28-program CPU-edge batch now matches all 28 complete blocks and
-444 decoded fields. It samples shift counts and incoming carry/overflow states,
-rotate flags, multiply/divide, high-only TESTSET bytes and pair multiply-subtract.
-The old model differed only in 33 post-instruction flag fields. Corrections match
-those observations; 112 separate synthetic cases check selected extrapolated
-policies without adding physical evidence. General overshift carry and pair
-subtract carry still need distinguishing operands. The owner confirmed normal
-startup after the batch.
+## Startup and input limits
 
-Hardware evidence also covers eleven earlier CPU cases and the specific
-[chip, interrupt-state, stack, ROM and ADC observations](progress.md#hardware-observations-for-emulation).
-The newer stored-calibration copy supplies firmware estimates of LRC 209,500 Hz
-and RCH 17,909,450 Hz. A separate run with those inputs reaches the same USB
-boundary as the nominal-clock baseline. The copy does not measure absolute
-frequency or establish source freshness.
-Only 4,201 of the reference ROM's 131,072 bytes have been matched to this unit.
-The bootloader handoff, some reset/interrupt rules, clocks, ADC inputs, PSRAM
-capacity and timing remain partly assumed. Analog-button delivery, audio, Bluetooth,
-USB protocol behavior and full timing accuracy remain unfinished.
+The owner reports ordinary physical startup as an approximately three-second
+power-button hold, an animated Divoom logo on black, further animations and
+sounds, then the default clock face. HOT-heart was absent. Battery animation
+was mainly seen after a long reset, not the latest ordinary power-off/on cycle.
+These are operator observations, not measured timing.
 
-The immediate work is to acquire the separate startup content and provide a
-responsive SD/MMC path so unchanged firmware can open its own assets, alongside
-further UI, input and peripheral qualification. The fallback frame does not
-establish normal boot completion. Emulator development runs
-offline; physical measurements are prepared and executed separately.
-The display-divider interpretation follows installed firmware and differs
-from the family SDK. A passive panel capture would help resolve actual clock
-rate, pixel byte order and physical panel orientation; see the [probe backlog](hardware-probes.md).
+The workbench uses an explicit startup power hold and releases it at a declared
+instruction-retirement threshold. That threshold is a diagnostic fixture, not
+three seconds of physical time. Selected joystick inputs pass the firmware
+scanner and debounce, but an earlier mode-change request was refused by the
+application state; input delivery alone does not establish a working menu.
+
+Remaining work includes wireless startup, decoder completion, the normal
+clock/menu path, analog buttons, browser sound and further peripheral fidelity.
+A passive panel capture could qualify physical orientation, pixel byte order
+and clock rate; the source interpretations of the divider disagree. See the
+[remaining hardware measurements](hardware-probes.md). Emulator development
+runs offline, separately from physical probe preparation and execution.
 
 ## Published RAM-only fixtures
 

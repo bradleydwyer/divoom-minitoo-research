@@ -2,6 +2,10 @@
 
 The helper completed two independent passes of the ordinary 2 MiB main-chip array on the tested firmware-343005 unit. It does not update firmware or write flash contents. Other storage is outside its scope and restoring this capture remains unproven.
 
+The separate **120 MiB SD0 logical area has also been captured twice** using a
+different research reader. See the [storage backup results](storage-backup.md)
+for content, verification and limits; the command below reads only main flash.
+
 Each call uploads and checks a fixed reader, releases retained volatile flash modes, requires the expected ID, then reads a 4 KiB chunk with ordinary `03`, three address bytes and no dummy byte. The host checks preconditions, transfer limits, cleanup, context, stack guard and return to ROM. All twelve ROM excerpts are checked again before allowing the next chunk.
 
 The second complete pass compares every chunk with the first. Full file lengths and SHA-256 hashes must also match. There are no address/length/opcode/payload inputs, retries, protocol fallbacks, automatic resets, WREN, status writes, program or erase commands.

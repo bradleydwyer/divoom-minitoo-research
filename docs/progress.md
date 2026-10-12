@@ -1,6 +1,6 @@
 # Progress
 
-Results as of 11 October 2026 cover one physical MiniToo running stock firmware
+Results as of 12 October 2026 cover one physical MiniToo running stock firmware
 343005 and the separate offline emulator. Emulator results are identified below.
 
 | Check | Result |
@@ -13,14 +13,17 @@ Results as of 11 October 2026 cover one physical MiniToo running stock firmware
 | Read main-flash ID | `85 60 15`, consistent with Puya 16 Mbit parts |
 | Read first 64 flash bytes twice | Independent chip reads matched |
 | Read ordinary 2 MiB main-flash array twice | Both complete files matched; all 1,024 chunks checked |
+| Read exposed SD0 logical storage twice | Two complete 120 MiB images match, with no holes or changed sectors; separate private backup downloaded and verified; normal startup confirmed after manual restart |
 | Decompile and analyse captured firmware | Image inventoried, every application byte checked against the vendor listing, and 1,201 reachable procedures exported through REA; [findings and limits](firmware-analysis.md) |
 | Build an initial offline emulator | Published RAM-only fixtures run small PI32v2 programs; [scope and offline checks](emulator.md) |
-| Execute unchanged stock startup offline | Both main cores and scheduler running; filesystem mounted; explicit inputs and bounded peripheral models reach app/UI/LVGL tasks, six display frames and microphone configuration/capture with synthetic silence. The recorded six-frame checkpoint reaches two billion instructions and passes the earlier P11 reply/shared-lock stall under an explicit quantum-4 scheduling profile. Complete boot and full UI behavior remain unfinished |
-| Render through the emulated display | Synthetic native PI32v2 guests produce complete IMD frames; stock firmware has transferred six frames totaling 122,880 pixels. The saved HOT-heart is the embedded missing-`power_on.gif` fallback, independently decoded to the complete model frame. Separate SD0 C/D startup content has not been captured. Color accuracy and physical orientation remain unproven |
+| Execute unchanged stock startup offline | Both cores and scheduler run; program-flash and captured SD0 filesystems mount. The DAC-enabled batch advances battery animation and consumes guest PCM. After startup power release, the web replay reaches Bluetooth/RF initialization and stops on an unmodeled wireless register. Clock face and interactive UI remain unverified |
+| Render through the emulated display | The DAC-enabled batch reaches 58 full transfers; the subsequent web replay reaches 63. The earlier HOT-heart was a missing-content fallback. Physical color/orientation and the ordinary boot sequence remain unqualified |
 | Check a fixed RAM CPU probe against the emulator | All eleven cases and the complete 512-byte result matched |
 | Check application USB storage | LUN0 INQUIRY succeeds; READ CAPACITY(10) stalls on its first data read; no capacity, sector or backing-device mapping established; owner confirms no microSD was inserted and normal operation after reattachment |
 | Run a combined CPU/trim batch | All eleven jobs completed; ten CPU blocks match after three categories of emulator correction; normal startup confirmed after the whole batch |
 | Run a further CPU-edge batch | All 28 programs completed and match the corrected emulator in 28 whole blocks and 444 decoded fields; finite flag/TESTSET observations, with normal startup separately confirmed |
+| Run storage-path, memory and consolidated CPU campaigns | 1,680 + 2,292 + 5,968 cases completed and match native replay after fixes. Normal startup after each final manual restart separately confirmed |
+| Consume guest PCM offline | Functional DAC sink consumes 244,192 stereo signed16 frames; shared ADC/DAC interrupt tests pass. Faithful sound reproduction and decoder completion remain unqualified |
 | Sample chip revision | `SYSTEM.CHIP_ID = 0x00006903`; revision D by the installed firmware's diagnostic |
 | Measure nested CLI/STI behaviour | Observed save/mask/restore sequence matched the emulator hypothesis; eight sampled caller-state words restored |
 | Read stack-bank prerequisites | Stack limits and mask/configuration words captured; no stack register was written |
@@ -35,7 +38,7 @@ Results as of 11 October 2026 cover one physical MiniToo running stock firmware
 
 Offline verification checked both full file sizes/hashes, every original RAM result block, each chunk hash and all twelve ROM fingerprints after every call. Raw captures remain private. No firmware update, flash program/erase or status-register write has been sent. Mode-release frames change volatile protocol state.
 
-This captures the ordinary main-chip array, rather than every storage device. It includes the embedded HOT-heart fallback but not an acquired SD0 C/D content image. Matching copies do not independently prove every address line or establish a restore path.
+The main-flash capture covers the ordinary 2 MiB chip array. A separate acquisition now covers the exposed 120 MiB SD0 logical area, including startup content missing from that program-flash image. Matching copies do not identify all physical storage, establish an atomic snapshot or prove a restore path. See the [storage backup](storage-backup.md) for extraction and filesystem limits.
 
 The owner reports normal startup after an approximately three-second power
 press as an animated Divoom logo on black, further animations and sounds, then
@@ -54,7 +57,8 @@ corrected and tested.
 
 Complete behavioural reverse engineering remains unfinished, and generated C
 still contains known errors. Command schemas, indirect calls, DSP, P11 execution,
-ROM internals and external assets have gaps. See the [firmware analysis summary](firmware-analysis.md)
+ROM internals and asset formats still have gaps, although the separate SD0
+content has now been acquired. See the [firmware analysis summary](firmware-analysis.md)
 for the scope, recorded validation and remaining work. No hardware commands were
 sent during that investigation.
 
@@ -113,8 +117,8 @@ the instruction/return-path audit; caller registers were not sampled.
 The ten CPU programs initially matched seven complete blocks. BR28 corrections
 to selected shift/multiply/divide flags and TESTSET writes now match all ten
 512-byte blocks and 118 named fields. The sampled arithmetic distinguishes
-C/Z/N/V; other flag inputs, shift counts and high-only TESTSET bytes remain
-useful follow-ups. Cached trim implies a firmware-calculated ADC reference of
+C/Z/N/V; later batches below extend the incoming flags, shift counts and
+high-only TESTSET coverage. Cached trim implies a firmware-calculated ADC reference of
 795 mV, not a measured voltage; raw trim stays private and freshness remains
 unproven.
 
@@ -125,17 +129,33 @@ multiply/divide, high-only TESTSET bytes and pair multiply-subtract. The earlier
 model had 33 post-instruction flag differences; arithmetic results and scratch
 bytes already matched. The corrected emulator matches all 28 whole blocks and
 444 decoded fields. Selected policies for unmeasured operands are checked by
-112 synthetic cases, which provide no extra hardware qualification. General
-large-count carry and pair subtract carry remain partly inferred. Stack, IRQ,
-fault and physical multicore timing behavior were not measured by this batch.
+112 synthetic cases, which provide no extra hardware qualification. The later
+supplement adds distinguishing
+large-count logical-shift and pair-subtract carry operands. Stack, IRQ, fault
+and physical multicore timing behavior were not measured by the edge batch.
 
-The [next probe campaign](hardware-probes.md) tracks remaining distinguishing CPU
-operands alongside qualified SD/pin observations. Reuse the completed snapshots. Stack
-writes, RTI and TIMER2 tests retain their separate prerequisites.
+Three further campaigns completed: **1,680 storage-path CPU cases, 2,292 memory
+CPU cases and a 5,968-case consolidated supplement**. All 9,940 cases match
+native emulator replay after corrections, including registers/PSR and the
+bounded memory operands of stores. Each batch returned to ROM, and the operator
+separately confirmed normal startup after its final manual restart. The
+supplement broadens rounding, saturation, stride/DSP memory, carry and flag
+coverage, plus selected REP/parallel contexts and finite floating point. This
+does not qualify every encoding, exception, memory fault or timing rule.
+
+The reviewed-root static decode census now has zero rejected sites, down from
+53; indirect targets and unreviewed paths remain outside that result. These
+measurements and offline fixes allowed image-backed startup to reach active
+DAC playback, then Bluetooth/RF initialization. See [emulator validation](emulator.md).
+
+The [hardware backlog](hardware-probes.md) tracks remaining measurements.
+Reuse completed evidence; stack writes, RTI and TIMER2 tests retain their
+separate prerequisites. The present wireless initialization investigation can
+continue offline without another device run.
 
 ## Still to come
 
-- Continue stock firmware boot emulation and use the measured hardware state to check the board model. Prepare the next independent probes together.
+- Qualify the reached Bluetooth/RF initialization path and audio decoder completion, then continue toward the ordinary clock face and interactive UI. Reuse completed CPU measurements; batch future probes only when a concrete ambiguity requires them.
 - Diagnose the display setup, then demonstrate visible output from RAM code.
 - Close the remaining firmware behaviour and decompiler gaps. Physical CPU comparisons cover a small subset; broader offline model checks do not establish a complete MiniToo.
 - Establish and review installation, recovery and rollback paths that do not depend on a working application.

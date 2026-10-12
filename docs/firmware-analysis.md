@@ -21,8 +21,10 @@ it does not establish that every instruction or behaviour is understood.
 The analysis covers boot, memory, tasks, Bluetooth, command routing, updates,
 display, audio, storage, power and the P11 coprocessor. It also confirms that
 the legacy version-query handlers immediately return, and traces the screen's
-“60 M” free-space display to a separate filesystem. The underlying storage
-units and physical geometry still need proof.
+“60 M” free-space display to a separate filesystem. A later
+[SD0 acquisition](storage-backup.md) captured two matching 120 MiB
+logical images with two FAT16 partitions. The fitted physical part and hidden
+regions remain unidentified.
 
 ## What remains unfinished
 
@@ -31,9 +33,11 @@ contains known errors and is not recovered, buildable firmware source.
 
 Remaining gaps include command payload schemas, indirect calls and state
 machines, display/audio behaviour, DSP, P11 execution, ROM internals and external
-assets outside the captured main-flash array. The private coverage ledger records
-these limits explicitly. A complete firmware reconstruction and bootable MiniToo
-emulator have not been produced.
+asset formats. Startup assets outside main flash have since been acquired in
+the separate SD0 image and attached read-only to the research emulator. The
+private coverage ledger records remaining limits. A complete firmware
+reconstruction and emulator demonstrating normal clock/menu startup have not
+been produced.
 
 ## Validation and evidence
 

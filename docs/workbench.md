@@ -8,7 +8,7 @@ case, with no Divoom photographs, logos or boot artwork.
 public source tree does not yet include it or the BR28 machine integration.**
 The [published emulator instructions](emulator.md) still describe the earlier
 RAM-only fixtures. This page records the workbench's scope and integration
-boundary as of 11 October 2026.
+boundary as of 12 October 2026.
 
 ## How it connects
 
@@ -29,8 +29,10 @@ The workbench does not automatically pick up a new emulator build.
 | Ten-second reset | A cancellable ten-second hold that triggers the same process restart. Physical power/reset circuitry is not modelled by this gesture. |
 | RAM inspector | Reads internal RAM through QMP while paused. |
 | Joystick and six buttons | An explicit GPIO profile connects the five joystick contacts and logical button 1. Analog buttons 2–6 remain disabled in that profile. |
+| Internal SD0 | The run configuration attaches a separate read-only copy of the captured 120 MiB image to the BR28 SD0 controller. Firmware mounts its content volumes. |
 | SD card bay | Stages read-only raw images and models card presence in the input lab. Guest insertion requires an emulated SD controller and removable block device. |
 | File browser | Lists local workspace files and run outputs. Guest filesystem access is pending. |
+| Audio | The DAC model writes guest PCM to an isolated local output per run. Browser sound playback is not implemented. |
 
 The joystick has five digital contacts: left, right, up, down and press. The six
 buttons are also simple down/up contacts. There are no analogue axes or
@@ -67,7 +69,22 @@ injected.
 SD insertion uses QEMU's removable-media interface once the board exposes a
 compatible device. Uploaded raw images are read-only and limited to 64 MiB in
 the current workbench. A file upload alone does not insert a card into the
-guest or mount its filesystem.
+guest or mount its filesystem. This removable-media feature is separate from
+the internal SD0 image supplied in the emulator's run configuration.
+
+## Current firmware checkpoint
+
+With the captured SD0 image and the latest tested DAC model, unchanged firmware
+reads its own content, advances a battery animation and produces PCM. The web
+replay releases the startup power input and reaches Bluetooth/RF initialization.
+It then stops at an unmodeled `JL_WL.CON0` read, after 63 display transfers;
+the final screen is black. The clock face and interactive menu remain unverified.
+See the [emulator results](emulator.md) for the captured PCM and decoder limits.
+
+A paused process needs Run before it can advance. A running label or increasing
+host session timer alone does not establish guest progress: inspect the model's
+stop reason when diagnosing a blank display. Restart starts the configured
+executable again; it does not rebuild or select a newer binary automatically.
 
 ## Checks and limits
 
@@ -81,8 +98,8 @@ display fixture produced the same PPM bytes as its saved reference image.
 A later real-browser check verified automatic startup release and Up accepted
 by the firmware scanner after a sixteen-second host hold. Separate native input
 replays also pass debounce and reach application handlers. This establishes
-selected GPIO input delivery, not normal boot or a working menu. Guest SD
-operation and analog-button delivery remain unfinished. Short host clicks can
+selected GPIO input delivery, not normal boot or a working menu. Removable-card
+integration and analog-button delivery remain unfinished. Short host clicks can
 end before debounce at the current emulator speed.
 
 Input replay follows host wall-clock timing, and is not an
