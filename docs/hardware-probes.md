@@ -8,12 +8,28 @@ requested large-count logical-shift and pair-subtract carry discriminators.
 Normal startup after each batch's final manual restart was separately confirmed.
 
 The [SD0 acquisition](storage-backup.md) produced two matching complete 120 MiB
-logical images. The read-only emulator now mounts the content, opens startup
-assets, advances a battery animation and consumes guest-produced PCM. After
-startup power release, it reaches an unmodeled wireless register in Bluetooth/RF
-initialization. The next step is source-based qualification of that path, plus
-audio decoder completion. **No new hardware run is currently required for this
-investigation.** Full boot and interactive UI remain unfinished.
+logical images. Unchanged firmware now uses those assets to render the stock
+clock in the emulator. Remaining hardware questions concern specific CPU,
+peripheral and intercore rules; offline performance work needs no device probe.
+
+The first 32-job Bluetooth batch completed, but every radio readback was zero
+while its independent reference timer progressed. It did not qualify clocks,
+comparators or inactive-reset behavior. Normal startup after that batch was
+confirmed separately.
+
+Two follow-up RF0 batches each executed two prerequisite leaves. In the latest,
+the parent clock route and the additional SFR-always-on setting both retained,
+and the reference timer progressed. Both classic and LE configuration
+witnesses nevertheless still read zero after nonzero writes. The remaining 32
+dependent jobs were skipped without device commands. “Batch complete” here means the conditional
+plan finished, not that the radio tests passed. Common-control ordering and
+minimal ownership must be resolved before another timing attempt. The latest
+RF0 report does not yet contain a confirmed final restart observation.
+
+IPC1, the proposed two-core/P11 race investigation, remains **blocked**: the
+single-core ROM harness does not own both main CPUs, the source-32 handler,
+shared lock and live P11 mailboxes. A suitable bounded application fixture is
+needed; repeating a ROM snapshot cannot answer that concurrency question.
 
 This page is a measurement backlog, not a ready device invocation. Prepare
 future distinguishing cases together when an actual unresolved hardware rule
@@ -38,6 +54,9 @@ screen. Controller/flex/PSRAM markings would also help.
 | Audio sampling ADC | Qualify effective sample rate, watermark timing, overrun, rearm and shared audio IRQ behavior | Stock code requests 44.1 kHz; ring units and ACK versus consumption ordering are source-derived. Physical sampling behavior remains unmeasured; prepare separately from retained internal-ADC observations |
 | Audio DAC | Qualify the source-derived DMA model | Functional ring playback and shared ADC/DAC interrupts pass native tests. Physical rate, gain/output, underflow and interrupt timing remain unmeasured |
 | Selected additional GPIO/backlight configuration | Check routing and PWM assumptions | Include only useful fields not already captured; distinguish ROM context from stock operation |
+| Register-count word memory shifts (CPU2) | Confirm E86E flags, full-count boundaries and signed offsets reached by centre-stick input | Generic correction passes 490 offline cases; consolidate physical discriminators with immediate-shift controls in the next qualified SRAM-only batch |
+| Bluetooth register access (RF0) | Establish inactive register retention before interpreting clocks or comparators | Latest parent-route and SFR-always-on stages passed, but both configuration witnesses failed retention; 32 dependent jobs skipped. Resolve ordering/ownership before another capture |
+| P11 reply and intercore exclusion (IPC1) | Determine why CPU0 can consume CPU1's synchronous reply in the emulator | Blocked on a bounded fixture owning both CPUs, source-32 handler, lock and mailboxes; no IPC1 measurement completed |
 | CPU arithmetic, carry, shifts and flags | Expand only where a specific ambiguity remains | New campaigns match after fixes, including distinguishing logical-shift/pair-subtract carry cases, rounding and saturation. Unsampled encodings, exceptions and timing remain open |
 | CPU loads/stores, read/modify/write, pairs, IF/REP and TESTSET | Qualify behavior beyond measured cases | Memory and supplement campaigns cover selected aliases, strides, DSP stores and bounded REP/parallel contexts. Unsafe aliases, memory faults and general interrupt interaction remain unmeasured |
 | Remaining main-ROM bytes | Test the reference image beyond the existing 4,201 matching bytes | Immutable mapping and address-zero acquisition still need qualification |
@@ -63,7 +82,7 @@ the original application setup; those questions need another observation path.
 | Inputs and removable storage | Controlled power-key and analogue-key sequence, contacts, polarity and debounce; card-detect and SD command completion/timeout behavior |
 | Internal ADC and SPI | Internal-channel conversion/rearm timing and actual clock inputs; SPI completion and readback |
 | Audio ADC/DAC | Effective rates, ring/watermark timing, overrun/underflow, ACK/consumption/rearm, output gain and shared interrupts; current native tests do not qualify physical timing |
-| Bluetooth/RF | Source qualification of the current wireless-register boundary first; no broad register sweep or RF experiment is prepared |
+| Bluetooth/RF | Inactive access prerequisite first, then qualified clock/comparator/anchor behavior; active RF, DMA and CPU interrupt delivery need separate ownership and containment |
 | Boot and auxiliary processor | Real bootloader handoff, remaining ROM identity, P11 ROM/mapping and IPC, reset/wake semantics |
 
 State-changing experiments need their own ownership and restoration contracts.

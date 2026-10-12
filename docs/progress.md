@@ -1,6 +1,6 @@
 # Progress
 
-Results as of 12 October 2026 cover one physical MiniToo running stock firmware
+Results as of 13 October 2026 cover one physical MiniToo running stock firmware
 343005 and the separate offline emulator. Emulator results are identified below.
 
 | Check | Result |
@@ -16,12 +16,16 @@ Results as of 12 October 2026 cover one physical MiniToo running stock firmware
 | Read exposed SD0 logical storage twice | Two complete 120 MiB images match, with no holes or changed sectors; separate private backup downloaded and verified; normal startup confirmed after manual restart |
 | Decompile and analyse captured firmware | Image inventoried, every application byte checked against the vendor listing, and 1,201 reachable procedures exported through REA; [findings and limits](firmware-analysis.md) |
 | Build an initial offline emulator | Published RAM-only fixtures run small PI32v2 programs; [scope and offline checks](emulator.md) |
-| Execute unchanged stock startup offline | Both cores and scheduler run; program-flash and captured SD0 filesystems mount. The DAC-enabled batch advances battery animation and consumes guest PCM. After startup power release, the web replay reaches Bluetooth/RF initialization and stops on an unmodeled wireless register. Clock face and interactive UI remain unverified |
-| Render through the emulated display | The DAC-enabled batch reaches 58 full transfers; the subsequent web replay reaches 63. The earlier HOT-heart was a missing-content fallback. Physical color/orientation and the ordinary boot sequence remain unqualified |
+| Execute unchanged stock startup offline | Both cores and scheduler run; program-flash and captured SD0 filesystems mount. Explicit no-peer Bluetooth models let unchanged firmware reach its clock face; the corrected menu-transition instruction allows a menu to render after centre-stick input. Startup remains intermittent because an observed P11 intercore reply race can deadlock the emulator; full interactive UI qualification remains unfinished |
+| Render through the emulated display | Stock clock graphics render; an explicit buffer-DMA byte-order profile corrects the scrambled palette, and one replay completes 272 transfers. The earlier HOT-heart was a missing-content fallback. Exact physical colors/orientation and bus timing remain unqualified |
 | Check a fixed RAM CPU probe against the emulator | All eleven cases and the complete 512-byte result matched |
 | Check application USB storage | LUN0 INQUIRY succeeds; READ CAPACITY(10) stalls on its first data read; no capacity, sector or backing-device mapping established; owner confirms no microSD was inserted and normal operation after reattachment |
 | Run a combined CPU/trim batch | All eleven jobs completed; ten CPU blocks match after three categories of emulator correction; normal startup confirmed after the whole batch |
 | Run a further CPU-edge batch | All 28 programs completed and match the corrected emulator in 28 whole blocks and 444 decoded fields; finite flag/TESTSET observations, with normal startup separately confirmed |
+| Add register-count memory shifts reached by menu input | Source-qualified E86E correction passes 490 offline cases; physical flags/count boundaries remain queued |
+| Save and restore emulator state | Experimental same-build checkpoints pass selected fresh-process continuation tests and an early stock-startup check; full late-startup, audio and storage coverage remains under validation |
+| Investigate emulator speed | Native CPU/device execution dominates; fixed-workload headless and workbench timings are similar. First timer/interrupt hot-path improvements are in use; larger event scheduling work remains under validation |
+| Probe isolated Bluetooth registers | First 32-job batch completed, but all radio readbacks were zero. Follow-up RF0 witnesses failed retention even with the SFR-always-on setting retained; 32 dependent jobs were skipped in the latest batch. Timing and interrupt semantics remain unqualified |
 | Run storage-path, memory and consolidated CPU campaigns | 1,680 + 2,292 + 5,968 cases completed and match native replay after fixes. Normal startup after each final manual restart separately confirmed |
 | Consume guest PCM offline | Functional DAC sink consumes 244,192 stereo signed16 frames; shared ADC/DAC interrupt tests pass. Faithful sound reproduction and decoder completion remain unqualified |
 | Sample chip revision | `SYSTEM.CHIP_ID = 0x00006903`; revision D by the installed firmware's diagnostic |
@@ -150,12 +154,15 @@ DAC playback, then Bluetooth/RF initialization. See [emulator validation](emulat
 
 The [hardware backlog](hardware-probes.md) tracks remaining measurements.
 Reuse completed evidence; stack writes, RTI and TIMER2 tests retain their
-separate prerequisites. The present wireless initialization investigation can
-continue offline without another device run.
+separate prerequisites. The latest radio follow-up did not qualify inactive
+register access, so its timing tests were skipped. IPC1, intended to distinguish
+the missing physical rule behind the P11 intercore race, remains blocked on
+a suitable fixture with ownership of both CPUs and the live mailbox/handler.
+Offline correctness and performance work can continue independently.
 
 ## Still to come
 
-- Qualify the reached Bluetooth/RF initialization path and audio decoder completion, then continue toward the ordinary clock face and interactive UI. Reuse completed CPU measurements; batch future probes only when a concrete ambiguity requires them.
+- Make clock/menu interaction usable: improve native speed, complete checkpoint validation and address intermittent P11 deadlock. Confirm broader menu behavior and audio decoding. Reuse completed CPU measurements; batch future probes around concrete unresolved rules.
 - Diagnose the display setup, then demonstrate visible output from RAM code.
 - Close the remaining firmware behaviour and decompiler gaps. Physical CPU comparisons cover a small subset; broader offline model checks do not establish a complete MiniToo.
 - Establish and review installation, recovery and rollback paths that do not depend on a working application.

@@ -13,7 +13,7 @@ Getting custom code running on a MiniToo, while keeping it working.
 
 ## Where things stand
 
-Progress as of **12 October 2026**, covering one physical MiniToo and offline emulation:
+Progress as of **13 October 2026**, covering one physical MiniToo and offline emulation:
 
 | Work | Result |
 | --- | --- |
@@ -22,9 +22,9 @@ Progress as of **12 October 2026**, covering one physical MiniToo and offline em
 | [Check the emulator against the device](docs/emulator.md) | **Succeeded for the tested cases.** Three new campaigns totaling 9,940 CPU cases match native emulator replay after corrections, extending the earlier CPU/trim and 28-program edge results. This is finite instruction coverage, not a complete ISA qualification. |
 | [Measure hardware state for emulation](docs/progress.md#hardware-observations-for-emulation) | **Captured.** Chip revision, nested CLI/STI behaviour, stack configuration, retained ADC values and stored oscillator estimates were sampled on the device. These cover specific observations, not full peripheral behaviour. |
 | [Compare built-in ROM service bytes](docs/progress.md#hardware-observations-for-emulation) | **Partial success.** Two matching reads covered 4,201 bytes and agreed with the reference. Whole-ROM identity remains unproven. |
-| [Full hardware emulation target](docs/emulator.md#stock-firmware-emulation-in-the-research-checkout) | **In progress.** Unchanged startup mounts the captured SD0 content and opens its own assets. A functional DAC model consumes 244,192 stereo PCM frames alongside microphone capture. After startup power release, the web replay reaches Bluetooth/RF initialization and stops at an unmodeled wireless register. The clock face and interactive menu remain unverified. |
-| [Emulated display](docs/emulator.md#stock-firmware-emulation-in-the-research-checkout) | **Stock graphics render.** The image-backed run advances the battery animation through 58 full display transfers; the later web replay reaches 63 before the wireless stop. The earlier HOT-heart was a missing-content fallback. Physical color/orientation and the ordinary startup sequence remain unqualified. |
-| [Browser workbench](docs/workbench.md) | **Built in the research checkout.** Live QEMU display, pause/run/restart, RAM reads, startup power release and selected GPIO inputs checked. Internal SD0 uses a read-only captured image; analog buttons, removable-card integration and browser audio remain unfinished. Workbench and full BR28 sources are not yet included here. |
+| [Full hardware emulation target](docs/emulator.md#stock-firmware-emulation-in-the-research-checkout) | **Stock clock and menu reached.** Unchanged firmware mounts captured SD0 content, passes Bluetooth initialization under explicit no-peer inputs and draws its own clock face. After a source-qualified CPU fix, centre-stick input reaches a rendered menu. Startup reliability, interactive speed and broader UI behavior remain unfinished. |
+| [Emulated display](docs/emulator.md#stock-firmware-emulation-in-the-research-checkout) | **Stock clock graphics render.** An explicit display DMA byte-order profile corrects the previously scrambled palette. One replay completes 272 display transfers without a CPU or MMIO fault. Exact physical colors, orientation and bus timing remain unqualified. |
+| [Browser workbench](docs/workbench.md) | **Built in the research checkout.** Live display, separate modeled-device/session-wall clocks, uncapped interactive runs and selected GPIO inputs. Checkpoint save/restore is implemented experimentally and still under validation. Performance is too slow for comfortable interaction; analog buttons, removable-card integration and browser audio remain unfinished. Full sources are not yet included here. |
 | [Read the main flash](docs/flash-backup.md) | **Succeeded.** Identified the chip and obtained two matching complete 2 MiB reads. |
 | [Back up separate SD0 content](docs/storage-backup.md) | **Succeeded for the exposed logical area.** Two complete 120 MiB images match, with no holes or changed sectors. A private off-machine backup was downloaded and verified. Physical part identity, other areas and restoration remain unproven. |
 | [Decompile and analyse the captured firmware](docs/firmware-analysis.md) | **Analysis pass completed.** REA exported 1,201 reachable procedures, and every application byte was checked against the vendor listing. Complete behavioural reverse engineering remains unfinished. |
@@ -36,11 +36,12 @@ Nothing has been flashed. A readable backup does not establish that we can resto
 
 ## What comes next
 
-1. Continue stock firmware boot emulation through the reached Bluetooth/RF initialization path, using preserved sources and completed CPU measurements. Qualify audio decoder completion and then work toward the clock face and interactive UI. The [hardware backlog](docs/hardware-probes.md) distinguishes remaining measurements from completed batches; another hardware run is not yet needed for the current investigation.
-2. Diagnose the display peripheral setup and get a visible RAM-only demo working.
-3. Fill the remaining gaps in command handling, display/audio, storage and firmware behaviour.
-4. Establish and review installation, recovery and rollback paths before making any persistent change.
-5. Once those paths are established, try a small UI character change, then restore the original and verify normal boot and the restored bytes.
+1. Improve native execution speed and startup reliability, then validate menu interaction. Initial timer/interrupt hot-path improvements are in use; a larger device-event optimization is under validation. Headless measurements show the browser bridge is not the main slowdown. Complete checkpoint validation so late-startup tests can resume without repeating boot.
+2. Resolve the observed P11 intercore reply race and qualify remaining CPU/peripheral rules through the [hardware backlog](docs/hardware-probes.md). The latest radio batch did not establish register liveness; its dependent tests were skipped.
+3. Diagnose the display peripheral setup and get a visible RAM-only demo working.
+4. Fill the remaining gaps in command handling, display/audio, storage and firmware behaviour.
+5. Establish and review installation, recovery and rollback paths before making any persistent change.
+6. Once those paths are established, try a small UI character change, then restore the original and verify normal boot and the restored bytes.
 
 ## Leaving ROM mode
 

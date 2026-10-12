@@ -1,10 +1,11 @@
 # MiniToo emulation and offline checks
 
-The research emulator now runs unchanged firmware 343005 with its captured
-SD0 content, advances a battery animation and consumes guest-produced PCM.
-After startup power release it reaches Bluetooth/RF initialization, where an
-unmodeled wireless register stops execution. **The clock face and interactive
-menu are not yet demonstrated.** Results below are current to 12 October 2026.
+The research emulator runs unchanged firmware 343005 with its captured SD0
+content and now draws the stock clock face. The earlier Bluetooth startup
+boundary has been passed under explicit no-peer model inputs. After a CPU
+instruction correction, centre-stick input reaches a rendered menu.
+**Performance and intermittent startup deadlock still prevent reliable, usable
+interaction.** Results below are current to 13 October 2026.
 
 The public source tree distributes the earlier RAM-only fixtures. The full
 BR28 board model and [browser workbench](workbench.md) remain in the private
@@ -14,29 +15,69 @@ research checkout; the build instructions below do not build that full system.
 
 The captured application initializes RAM, passes its startup CRC, starts both
 main cores and the scheduler, and mounts its flash filesystem. The SD0 model
-now reads a separate, read-only copy of the [verified storage image](storage-backup.md).
-Unchanged firmware mounts its C/D volumes and opens its own assets. The earlier
-HOT-heart was an embedded fallback for missing startup content; it was not
-proof of the ordinary physical boot sequence.
+reads a separate, read-only copy of the [verified storage image](storage-backup.md).
+Unchanged firmware mounts its content volumes and opens its own assets. The
+earlier HOT-heart was an embedded fallback for missing startup content.
 
-A completed run at 900 million aggregate instructions performs **58 full display
-transfers** and advances the battery animation. The functional DAC sink consumes
-**244,192 stereo signed16 frames (976,768 PCM bytes)**, about 5.537 seconds at the
-explicitly supplied 44,100 Hz rate. Audio ADC capture continues independently
-with synthetic microphone silence. Input firmware/storage hashes remain
-unchanged after execution. This run stops at its configured instruction budget.
+A later replay passes Bluetooth initialization, LE advertising and the classic
+discovery/page-timeout path using explicit no-peer inputs. A signed-literal
+CPU correction allows the stock clock configuration parser to complete. The
+clock now renders its own assets. An explicit MSB-first display DMA profile
+corrects the scrambled RGB565 palette without modifying firmware or assets.
+The color-profile replay completes 272 full display transfers, 5,570,560 pixels,
+and six billion aggregate instructions without a CPU or MMIO fault. It takes
+736.110 host seconds and reaches 132.525 modeled seconds; neither clock is a
+measurement of physical startup time. Exact physical colors, orientation and
+panel serialization still need qualification.
 
-The subsequent web replay releases its startup power input, reaches the
-Bluetooth task and RF initialization, and stops on an unmodeled word read of
-**`JL_WL.CON0` at `0x00fe2100`**. It reaches 63 display transfers, with the same
-number of consumed DAC frames; the final frame is black. The next task is to
-qualify this wireless initialization path against preserved source evidence.
-No additional hardware run is needed until a specific ambiguity is identified.
+The web run subsequently stopped on an unsupported register-count word-memory
+shift during centre-stick input. A generic E86E implementation now passes 490
+offline cases, including offsets, aliases, count boundaries, flags and refusal
+of an unsupported saturating form. The subsequent web session renders the menu
+after centre-stick input and
+records right-stick presses. This establishes that the earlier decoder stop
+was passed, not that all menu actions or input timing are correct. Those CPU
+cases establish source-qualified emulator behavior; a distinguishing physical
+batch remains queued.
 
-PCM consumption does not establish faithful sound reproduction. The firmware
-also reports decoder error code 33, whose meaning is still under investigation.
-The sink captures samples before modeled gain; it does not establish physical
-analog output or clock accuracy. Browser audio playback is not implemented.
+A separate failure is still unresolved: CPU1 requests a P11 reply while holding
+a shared lock, then CPU0's interrupt handler clears that reply before CPU1
+observes it. CPU1 waits for the flag and CPU0 waits for the lock. The captured
+emulator trace identifies that ordering; the missing physical routing or
+exclusion rule is not yet known. Smaller instruction quanta reduce observed
+failures but have not eliminated the race. Removing an instruction limit does
+not fix this deadlock.
+
+The functional DAC sink consumed 244,192 stereo signed16 frames in an earlier
+image-backed run, alongside synthetic microphone capture. PCM consumption does
+not establish faithful sound reproduction or resolve decoder error code 33.
+The sink captures samples before modeled gain; browser audio is unfinished.
+
+## Speed and resumable state
+
+Interactive speed is the current priority. Three-repeat fixed-workload tests
+compare native headless execution, idle QMP and the real workbench background
+loop. At 100 million stock-startup instructions, mean wall times were 12.085,
+11.957 and 12.112 seconds respectively. The workbench itself used about 1.1%
+of one host core. A synthetic 200-million-instruction control also had similar
+timings and byte-identical final machine reports in all nine runs. Stock
+repetitions retain small scheduling differences, so their timing comparison
+is not an exact-state equivalence proof. Disabling the browser bridge does not
+provide the missing multi-fold speedup.
+
+Initial timer and interrupt-selection hot-path improvements are in use. A
+larger optimization that advances devices at their next relevant event is under
+validation, including DMA visibility and interrupt ordering. It is not yet a
+claimed completed speedup. Guest instructions and modeled clock units must
+remain unchanged.
+
+Checkpoint save/restore has been implemented experimentally. Same-build fresh-
+process continuation checks pass for selected CPU/repeat, timer, lock, P11, memory-map
+and display-DMA states, plus an early stock-startup workbench checkpoint. Broader
+storage, audio-output and late-startup checks are still in progress.
+The checkpoint must match its executable, configuration and immutable inputs;
+it is not a portable save file across emulator fixes. Raw saved device state
+remains private.
 
 ## CPU measurements and coverage
 
@@ -84,7 +125,7 @@ or all rounding modes. Timing, faults and unmeasured modes remain separate work.
 | Audio ADC | Synthetic mono silence, ring accounting, watermark IRQ and separate acknowledgement/consumption |
 | Audio DAC | Signed16 mono/stereo SRAM DMA ring, producer/free-space accounting, wrap, enable/clock gating, pending/acknowledgement and shared ADC/DAC IRQ; explicit sample rate and bounded local PCM sink |
 | Auxiliary processor | Limited P11 interface behavior; its separate instruction stream is not executed |
-| Wireless | Current RF initialization boundary; reached register semantics still need qualification |
+| Wireless | Source-derived Bluetooth initialization, clocks, LE links and no-peer discovery policies; physical register liveness, timing and interrupt semantics remain unqualified |
 
 The DAC change passes 17 native guest tests and 36 native ADC regression guests.
 Checks include exact PCM bytes/order, ring wrap, real interrupt entry/return,
@@ -93,9 +134,9 @@ AddressSanitizer and UndefinedBehaviorSanitizer, including 250 DAC and 1,505 ADC
 timing-oracle cases. These are offline software checks, not additional physical
 measurements. The workbench backend, core and runner tests pass as well.
 
-An explicit four-instruction scheduling quantum passes the earlier P11
-reply/shared-lock stall while preserving instruction side effects. It does not
-establish physical multicore timing or universal race prevention. Only 4,201 of
+An explicit four-instruction scheduling quantum passed earlier selected P11
+reply/shared-lock tests, but later stock runs still exhibit the race described
+above. It does not establish physical multicore timing. Only 4,201 of
 the reference ROM's 131,072 bytes have been matched to this unit.
 
 ## Startup and input limits
@@ -112,8 +153,9 @@ three seconds of physical time. Selected joystick inputs pass the firmware
 scanner and debounce, but an earlier mode-change request was refused by the
 application state; input delivery alone does not establish a working menu.
 
-Remaining work includes wireless startup, decoder completion, the normal
-clock/menu path, analog buttons, browser sound and further peripheral fidelity.
+Remaining work includes reliable clock/menu interaction, native performance,
+checkpoint validation, decoder completion, analog buttons, browser sound and
+further peripheral fidelity.
 A passive panel capture could qualify physical orientation, pixel byte order
 and clock rate; the source interpretations of the divider disagree. See the
 [remaining hardware measurements](hardware-probes.md). Emulator development

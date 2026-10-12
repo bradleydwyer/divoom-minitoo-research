@@ -8,7 +8,7 @@ case, with no Divoom photographs, logos or boot artwork.
 public source tree does not yet include it or the BR28 machine integration.**
 The [published emulator instructions](emulator.md) still describe the earlier
 RAM-only fixtures. This page records the workbench's scope and integration
-boundary as of 12 October 2026.
+boundary as of 13 October 2026.
 
 ## How it connects
 
@@ -26,6 +26,9 @@ The workbench does not automatically pick up a new emulator build.
 | Screen | Reads the emulator's framebuffer, converts it to PNG and displays it in the browser. The headless build uses a small read-only QOM property because its QMP screenshot command is absent. |
 | Pause and run | Standard QMP `stop` and `cont`. |
 | Restart | Starts a fresh owned QEMU process, paused at the configured entry point. |
+| Clocks | Displays accumulated modeled device time separately from elapsed wall time of the host session. Model seconds are not calibrated physical seconds. |
+| Run limit | Interactive sessions can run without an instruction cutoff; fault checks remain active. This does not resolve a deadlock. |
+| Checkpoints | Experimental save/resume controls and a native same-build codec are under validation. Early stock-startup and selected synthetic roundtrips pass; broader coverage and deployment remain unfinished. |
 | Ten-second reset | A cancellable ten-second hold that triggers the same process restart. Physical power/reset circuitry is not modelled by this gesture. |
 | RAM inspector | Reads internal RAM through QMP while paused. |
 | Joystick and six buttons | An explicit GPIO profile connects the five joystick contacts and logical button 1. Analog buttons 2–6 remain disabled in that profile. |
@@ -74,12 +77,19 @@ the internal SD0 image supplied in the emulator's run configuration.
 
 ## Current firmware checkpoint
 
-With the captured SD0 image and the latest tested DAC model, unchanged firmware
-reads its own content, advances a battery animation and produces PCM. The web
-replay releases the startup power input and reaches Bluetooth/RF initialization.
-It then stops at an unmodeled `JL_WL.CON0` read, after 63 display transfers;
-the final screen is black. The clock face and interactive menu remain unverified.
-See the [emulator results](emulator.md) for the captured PCM and decoder limits.
+Unchanged firmware now mounts the captured SD0 content, passes the reached
+Bluetooth initialization path under explicit no-peer inputs and renders its
+stock clock face. A display DMA byte-order profile corrects the scrambled
+palette; physical color fidelity remains unqualified. Centre-stick input
+exposed another CPU instruction, now implemented with 490 offline cases. A
+subsequent web session renders the menu after centre-stick input.
+See the [emulator results](emulator.md) for the validation and remaining limits.
+
+Startup can still deadlock in an observed P11 reply/shared-lock race. Even
+successful runs are too slow for comfortable interaction. Native CPU/device
+execution is the main bottleneck: fixed-workload headless and workbench tests
+show similar wall times, with about 1.1% of one host core used by the workbench.
+Performance fixes and checkpoint validation are proceeding separately.
 
 A paused process needs Run before it can advance. A running label or increasing
 host session timer alone does not establish guest progress: inspect the model's
@@ -88,8 +98,8 @@ executable again; it does not rebuild or select a newer binary automatically.
 
 ## Checks and limits
 
-Twenty-one backend tests pass, including startup release, preserving unrelated
-GPIO bits, and rejecting unavailable controls. Earlier browser checks cover the
+Backend tests cover startup release, preserving unrelated
+GPIO bits, and rejection of unavailable controls. Earlier browser checks cover the
 eleven digital contacts, release on lost focus, input recording/replay,
 ten-second reset completion/cancellation, SD-image staging, and the real
 emulator's display, pause/run/restart and RAM reads. The synthetic native
@@ -98,7 +108,7 @@ display fixture produced the same PPM bytes as its saved reference image.
 A later real-browser check verified automatic startup release and Up accepted
 by the firmware scanner after a sixteen-second host hold. Separate native input
 replays also pass debounce and reach application handlers. This establishes
-selected GPIO input delivery, not normal boot or a working menu. Removable-card
+selected GPIO input delivery; broader menu behavior remains under validation. Removable-card
 integration and analog-button delivery remain unfinished. Short host clicks can
 end before debounce at the current emulator speed.
 
