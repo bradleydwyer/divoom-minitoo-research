@@ -36,7 +36,7 @@ Nothing has been flashed. A readable backup does not establish that we can resto
 
 ## What comes next
 
-1. Improve native execution speed and startup reliability, then validate menu interaction. Initial timer/interrupt hot-path improvements are in use; a larger device-event optimization is under validation. Headless measurements show the browser bridge is not the main slowdown. Complete checkpoint validation so late-startup tests can resume without repeating boot.
+1. Improve native execution speed and startup reliability, then validate menu interaction. Timer/interrupt and device-deadline improvements are in use; execution remains below real time. Headless measurements show the browser bridge is not the main slowdown. Same-build checkpoints now let tested startup states resume without repeating boot.
 2. Resolve the observed P11 intercore reply race and qualify remaining CPU/peripheral rules through the [hardware backlog](docs/hardware-probes.md). The latest radio batch did not establish register liveness; its dependent tests were skipped.
 3. Diagnose the display peripheral setup and get a visible RAM-only demo working.
 4. Fill the remaining gaps in command handling, display/audio, storage and firmware behaviour.

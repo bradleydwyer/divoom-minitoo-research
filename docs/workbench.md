@@ -89,7 +89,11 @@ Startup can still deadlock in an observed P11 reply/shared-lock race. Even
 successful runs are too slow for comfortable interaction. Native CPU/device
 execution is the main bottleneck: fixed-workload headless and workbench tests
 show similar wall times, with about 1.1% of one host core used by the workbench.
-Performance fixes and checkpoint validation are proceeding separately.
+The latest local build includes device-deadline optimizations and same-build
+checkpoints. The Session tab shows modeled device time and wall time separately.
+Pause and choose Save checkpoint; Resume checkpoint creates a fresh process at
+that saved state. Tested stock startup restored in about 0.6 seconds. Saves must
+match the exact executable and input files, so an emulator fix needs new saves.
 
 A paused process needs Run before it can advance. A running label or increasing
 host session timer alone does not establish guest progress: inspect the model's

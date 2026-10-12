@@ -23,8 +23,8 @@ Results as of 13 October 2026 cover one physical MiniToo running stock firmware
 | Run a combined CPU/trim batch | All eleven jobs completed; ten CPU blocks match after three categories of emulator correction; normal startup confirmed after the whole batch |
 | Run a further CPU-edge batch | All 28 programs completed and match the corrected emulator in 28 whole blocks and 444 decoded fields; finite flag/TESTSET observations, with normal startup separately confirmed |
 | Add register-count memory shifts reached by menu input | Source-qualified E86E correction passes 490 offline cases; physical flags/count boundaries remain queued |
-| Save and restore emulator state | Experimental same-build checkpoints pass selected fresh-process continuation tests and an early stock-startup check; full late-startup, audio and storage coverage remains under validation |
-| Investigate emulator speed | Native CPU/device execution dominates; fixed-workload headless and workbench timings are similar. First timer/interrupt hot-path improvements are in use; larger event scheduling work remains under validation |
+| Save and restore emulator state | Same-build save/resume is available in the local workbench; eleven fresh-process continuation scenarios cover CPU/peripherals, storage and audio. A 74-second stock-startup state restored in 0.60 seconds and continued; broader firmware-state coverage remains unfinished |
+| Investigate emulator speed | Native CPU/device execution dominates; fixed-workload headless and workbench timings are similar. Timer/interrupt and device-deadline improvements are in use; one billion-instruction pair improved from 126.155 to 82.126 seconds. Execution remains below real time; further optimization continues |
 | Probe isolated Bluetooth registers | First 32-job batch completed, but all radio readbacks were zero. Follow-up RF0 witnesses failed retention even with the SFR-always-on setting retained; 32 dependent jobs were skipped in the latest batch. Timing and interrupt semantics remain unqualified |
 | Run storage-path, memory and consolidated CPU campaigns | 1,680 + 2,292 + 5,968 cases completed and match native replay after fixes. Normal startup after each final manual restart separately confirmed |
 | Consume guest PCM offline | Functional DAC sink consumes 244,192 stereo signed16 frames; shared ADC/DAC interrupt tests pass. Faithful sound reproduction and decoder completion remain unqualified |
@@ -162,7 +162,7 @@ Offline correctness and performance work can continue independently.
 
 ## Still to come
 
-- Make clock/menu interaction usable: improve native speed, complete checkpoint validation and address intermittent P11 deadlock. Confirm broader menu behavior and audio decoding. Reuse completed CPU measurements; batch future probes around concrete unresolved rules.
+- Make clock/menu interaction usable: improve native speed, broaden checkpoint coverage and address intermittent P11 deadlock. Confirm broader menu behavior and audio decoding. Reuse completed CPU measurements; batch future probes around concrete unresolved rules.
 - Diagnose the display setup, then demonstrate visible output from RAM code.
 - Close the remaining firmware behaviour and decompiler gaps. Physical CPU comparisons cover a small subset; broader offline model checks do not establish a complete MiniToo.
 - Establish and review installation, recovery and rollback paths that do not depend on a working application.

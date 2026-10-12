@@ -65,19 +65,28 @@ repetitions retain small scheduling differences, so their timing comparison
 is not an exact-state equivalence proof. Disabling the browser bridge does not
 provide the missing multi-fold speedup.
 
-Initial timer and interrupt-selection hot-path improvements are in use. A
-larger optimization that advances devices at their next relevant event is under
-validation, including DMA visibility and interrupt ordering. It is not yet a
-claimed completed speedup. Guest instructions and modeled clock units must
-remain unchanged.
+Timer/interrupt improvements and a device-deadline cache are now in use. The
+cache skips repeated peripheral recomputation before the next observable event,
+including individual audio samples and display rows; MMIO still synchronizes
+state. In one paired billion-instruction stock-startup run, the earlier build
+took 126.155 seconds and the deadline prototype took 82.126 seconds: 1.54×
+throughput. This is a single paired measurement with scheduling and host-load
+variation, and the emulator remains slower than real time. Exact synthetic
+comparisons cover 264 cases plus sample-by-sample RAM/PCM checks. Guest
+instructions, clock units and the CPU scheduling quantum are unchanged.
 
-Checkpoint save/restore has been implemented experimentally. Same-build fresh-
-process continuation checks pass for selected CPU/repeat, timer, lock, P11, memory-map
-and display-DMA states, plus an early stock-startup workbench checkpoint. Broader
-storage, audio-output and late-startup checks are still in progress.
-The checkpoint must match its executable, configuration and immutable inputs;
-it is not a portable save file across emulator fixes. Raw saved device state
-remains private.
+Same-build checkpoint save/restore is available in the local workbench. Eleven
+continuation scenarios, each restored twice into fresh processes, cover CPU,
+repeat, timer, lock, P11, memory-map, display, storage and audio state. A stock
+startup state that took 74 seconds to reach restored in 0.60 seconds, then
+continued through automatic power-button release. A separate live-web-server
+save/resume check preserved modeled time and screen bytes, restoring in 0.56
+seconds. This does not establish every possible firmware state.
+
+Pause, save a named checkpoint, then use Resume checkpoint to create a fresh
+process at that state. The checkpoint must match its executable, configuration
+and immutable inputs; it is not a portable save file across emulator fixes.
+Raw saved device state remains private.
 
 ## CPU measurements and coverage
 
@@ -154,7 +163,7 @@ scanner and debounce, but an earlier mode-change request was refused by the
 application state; input delivery alone does not establish a working menu.
 
 Remaining work includes reliable clock/menu interaction, native performance,
-checkpoint validation, decoder completion, analog buttons, browser sound and
+broader checkpoint coverage, decoder completion, analog buttons, browser sound and
 further peripheral fidelity.
 A passive panel capture could qualify physical orientation, pixel byte order
 and clock rate; the source interpretations of the divider disagree. See the
