@@ -69,7 +69,8 @@ screen. Controller/flex/PSRAM markings would also help.
 ## Install and restore measurements
 
 The [offline install-and-restore work](emulator.md#install-and-restore-rehearsal)
-is collecting the specific hardware questions left by its source-derived models.
+has collated the specific hardware questions left by its source-derived models,
+retaining each case's ownership, prerequisites, bounds, stopping and cleanup.
 The complete ROM, main-flash and SD0 acquisitions already exist; repeating them
 would not establish reset behavior or recovery. A future restore will need its
 own complete readback and boot verification.
@@ -83,7 +84,11 @@ own complete readback and boot verification.
 | State needed for restoration | Establish the loader's actual dependencies on chip identity, fuses, main-array configuration and separate storage | Backups do not justify synthetic identity inputs or a guessed writable partition map |
 | Reset or interruption during writing | Operation state, changed bytes and recovery through the independently established entry path | Later work on an owned disposable or otherwise qualified recoverable target; no persistent experiment is ready |
 
-These cases will be consolidated with IPC1 and the analog-key work only where
+Malformed flash frames, malformed USB commands and extended controller modes
+remain later robustness work, included only when the chosen recovery flow
+needs them and a suitable recoverable target is available.
+
+These cases will be combined with IPC1 and the analog-key work only where
 their execution contexts and ownership contracts are compatible. No runnable
 install/recovery hardware batch is being claimed.
 

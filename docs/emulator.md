@@ -97,14 +97,20 @@ original through the modeled hardware. The existing clock/menu workbench loads
 a decoded application with an explicit bootloader handoff. Its checkpoints save
 virtual machine state; they do not demonstrate rewriting firmware.
 
-The new work is split into four parts:
+The first implementations are now combined and checked together:
 
 | Part | Current state |
 | --- | --- |
-| ROM and flash boot chain | An isolated opt-in prototype starts at ROM byte zero with the raw flash capture and no predecoded application or synthetic handoff. It executes original reset, power and clock instructions, then stops at USB setup before any flash transaction. Reset mapping and supplied readiness inputs remain unmeasured. |
-| Writable virtual flash | Erase/program, busy/protection rules, disposable backing and durable state are being implemented and checked. The original captures remain immutable; combined native qualification is unfinished. |
-| USB recovery | A virtual host and controller/endpoint model are being developed to exercise the actual guest ROM transport. The existing disconnected USB profile does not provide this capability. |
-| Restore qualification | The target is a guest-driven install, a fresh boot, restoration of the original bytes, then another fresh stock boot with complete readback and independent guest witnesses. This complete sequence has not passed yet. |
+| ROM and flash boot chain | Opt-in reset mode starts at ROM byte zero with raw flash and no predecoded application or synthetic handoff. Its 24 reset/admission checks pass; the qualified path stops at USB arbitration before flash access. Further boot integration is underway. Reset mapping, readiness and timer inputs remain assumptions. |
+| Writable virtual flash | Twenty native cases cover guest SPI erase/program, busy/protection/framing rules, complete readback and persistence across fresh processes for both candidate flash profiles. Mutations use private backing; original captures remain immutable. Writable profiles refuse checkpoint save/load so a VM snapshot cannot rewind durable flash. |
+| USB recovery | Fifteen native fixtures exercise a private packet host and controller using original ROM instructions. A bounded RAM upload/readback/call/result sequence validates six status replies; a separate fixture covers control enumeration and IRQ29. These use explicit service entry, and have not established cold recovery entry or a USB flash updater. |
+| Restore qualification | A SRAM guest changes one private flash sector, restores its original bytes and verifies the complete 2 MiB image across fresh processes. This is a data fixture. Bootable custom firmware, genuine ROM/loader boots and restoration through ROM USB remain unfinished; the runner explicitly reports end-to-end incomplete. |
+
+The combined build also matches all 439 existing device-regression cases,
+including complete machine reports, return codes, audio and frame hashes.
+The complete target remains a guest-driven installation, a fresh custom boot,
+ROM USB restoration and another fresh stock boot with independent witnesses.
+Neither checkpoint reload nor replacing a host image satisfies that sequence.
 
 A separate offline source audit passed: all 13 installed firmware ranges matched,
 25 instruction sites were checked, and all 65,536 ADC decoder counts were tested
