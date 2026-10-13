@@ -134,9 +134,12 @@ and four-instruction multicore quantum remain unchanged.
 Checkpoint qualification now includes 400 rapid pause/resume boundaries and
 twenty repetitions each of repeat-context, single-core and lock-wakeup restores,
 preserving the exact next-CPU cursor and modeled clocks. The full 439-case
-device comparison also passes. Longer blocks for ordinary mapped-memory loads
-are being investigated separately; a synthetic gain is not yet a firmware
-speed result.
+device comparison also passes. Subsequent mapped-memory load batching and direct
+MMIO-write experiments did not establish a useful general gain. A read-lock
+optimization improved one startup pilot but slowed the production clock workload
+by 8.2%, so it was also kept out of the default build. The next experiment targets
+translation-block overhead around qualified status reads. Execution remains
+below hardware speed.
 
 A live-web test of this build restored the stock clock screen into a fresh
 process in 0.63 seconds with identical screen bytes, emulated time and button

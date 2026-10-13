@@ -56,6 +56,8 @@ operator observations are separate from emulator results and measured timing.
 A first timing campaign measured 49 arithmetic, floating-point, branch and SRAM
 streams at three loop lengths. All 149 groups completed, and offline verification
 reconstructed all 1,029 paired triplets from the preserved transfer evidence.
+The operator confirmed normal startup after the manual restart. This observation
+covers the completed batch, not each operation independently.
 The largest-count samples resolve every stream. In these specific loops,
 integer division costs about 17 times the dependent-add reference, and dependent
 pointer loads cost about 3.23 times that reference. These are incremental stream
