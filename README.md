@@ -9,6 +9,15 @@ Research into running custom code on the [MiniToo](https://divoom.com/products/m
 >
 > **Please don't rush into running the live tools yet.** Read the linked notes and understand the risks first. RAM-only code and read-only flash operations are not risk-free.
 
+## Our first little firmware
+
+<img src="docs/images/robot-splash.png" width="240" height="192" alt="Orange robot drawn by our standalone firmware in the emulator, with the second button indicator lit">
+
+A little orange robot, drawn by our own code in the emulator. The five lights
+respond to the five small buttons. This 41 KB RAM program has its own startup
+and display code; it has not been run on the physical MiniToo yet.
+[What runs and what remains](docs/robot-splash.md).
+
 ## Where things stand
 
 Progress as of **13 October 2026**, covering one physical MiniToo and offline emulation:
@@ -29,12 +38,13 @@ Progress as of **13 October 2026**, covering one physical MiniToo and offline em
     <tr><td width="28%"><a href="docs/progress.md#hardware-observations-for-emulation">Compare the exposed built-in ROM window</a></td><td><strong>Complete byte identity verified.</strong> Two full 128 KiB passes, including byte zero, match each other and the preserved reference with no holes or differences. Normal startup after manual restart was confirmed. Physical mapping, aliases and hidden areas remain unqualified.</td></tr>
     <tr><td width="28%"><a href="docs/emulator.md#stock-firmware-emulation-in-the-research-checkout">Full hardware emulation target</a></td><td><strong>All ten main menu sections entered.</strong> Unchanged firmware mounts captured SD0 content and renders its clock and menus. Settings and drained-audio reconfiguration faults are fixed; menu checks exercise the brightness slider, timers, WhiteNoise and selected game actions. Full feature coverage, browser audio and physical sound fidelity remain unfinished; a recurring P11 intercore deadlock and slow interaction remain.</td></tr>
     <tr><td width="28%"><a href="docs/emulator.md#stock-firmware-emulation-in-the-research-checkout">Emulated display</a></td><td><strong>Stock clock graphics render.</strong> An explicit display DMA byte-order profile corrects the previously scrambled palette. One replay completes 272 display transfers without a CPU or MMIO fault. Exact physical colors, orientation and bus timing remain unqualified.</td></tr>
-    <tr><td width="28%"><a href="docs/workbench.md">Browser workbench</a></td><td><strong>Built in the research checkout.</strong> Live display, separate modeled-device/session-wall clocks, uncapped runs, selected inputs and same-build checkpoints. The current mixed GPIO/ADC profile adds top-right Return; the updated live session passes clock-to-Music and Back navigation. Other analog keys, removable-card integration and browser audio remain unfinished. Full sources are not yet included here.</td></tr>
+    <tr><td width="28%"><a href="docs/workbench.md">Browser workbench</a></td><td><strong>Built in the research checkout.</strong> Live display, separate modeled-device/session-wall clocks, uncapped runs and same-build checkpoints. All five measured ADC buttons are connected; native conversion, browser ownership/release and recording/replay checks pass. Physical stock button meanings and timing, removable-card integration and browser audio remain unfinished. Full sources are not yet included here.</td></tr>
     <tr><td width="28%"><a href="docs/flash-backup.md">Read the main flash</a></td><td><strong>Succeeded.</strong> Identified the chip and obtained two matching complete 2 MiB reads.</td></tr>
     <tr><td width="28%"><a href="docs/storage-backup.md">Back up separate SD0 content</a></td><td><strong>Succeeded for the exposed logical area.</strong> Two complete 120 MiB images match, with no holes or changed sectors. A private off-machine backup was downloaded and verified. Physical part identity, other areas and restoration remain unproven.</td></tr>
     <tr><td width="28%"><a href="docs/firmware-analysis.md">Decompile and analyse the captured firmware</a></td><td><strong>Analysis pass completed.</strong> REA exported 1,201 reachable procedures, and every application byte was checked against the vendor listing. Complete behavioural reverse engineering remains unfinished.</td></tr>
     <tr><td width="28%"><a href="docs/rom-mode.md">Leave idle ROM and boot normally</a></td><td><strong>Succeeded.</strong> The tested power-button procedure returned the device to stock firmware, including after the display attempt below.</td></tr>
-    <tr><td width="28%">Show something using a RAM display program</td><td><strong>Attempted, unsuccessful.</strong> The program ran and returned to ROM, but timed out on the first byte. Zero completed bytes were confirmed; the backlight was not enabled.</td></tr>
+    <tr><td width="28%"><a href="docs/robot-splash.md">Run our own display and button program</a></td><td><strong>Succeeded in the emulator.</strong> A standalone 41 KB RAM application draws the robot above and lights an indicator for each of the five ADC buttons. Actual rendered pixels and press/release transitions match the offline oracle. Physical execution remains untested.</td></tr>
+    <tr><td width="28%">Show something using a RAM display program on the physical device</td><td><strong>Attempted, unsuccessful.</strong> The earlier program ran and returned to ROM, but timed out on the first byte. Zero completed bytes were confirmed; the backlight was not enabled.</td></tr>
     <tr><td width="28%"><a href="docs/emulator.md#install-and-restore-rehearsal">Rehearse firmware installation and restoration offline</a></td><td><strong>Bounded sequence passes.</strong> Original ROM USB and a guest SPI writer install a minimal custom entry, a fresh ROM/loader boot verifies its witness, recovery restores the complete original array, and another fresh boot executes stock startup. Reset, identity and cold-entry inputs remain modeled; physical restoration is unproven.</td></tr>
     <tr><td width="28%">Install modified firmware on the device, then restore the original</td><td><strong>Not attempted.</strong> Installation, recovery from broken firmware and restoration remain unproven.</td></tr>
   </tbody>
@@ -46,7 +56,7 @@ Nothing has been flashed. A readable backup does not establish that we can resto
 
 1. Improve native execution speed and startup reliability, and extend the menu walkthrough beyond entry screens. Timer/interrupt and device-deadline improvements are in use; execution remains below real time. Headless measurements show the browser bridge is not the main slowdown. Same-build checkpoints let tested states resume without repeating boot.
 2. Resolve the observed P11 intercore reply race and qualify remaining CPU/peripheral rules through the [hardware backlog](docs/hardware-probes.md). The latest radio batch did not establish register liveness; its dependent tests were skipped.
-3. Diagnose the display peripheral setup and get a visible RAM-only demo working.
+3. Diagnose the physical display peripheral setup and get a visible RAM-only demo working on the device.
 4. Fill the remaining gaps in command handling, display/audio, storage and firmware behaviour.
 5. Qualify the offline install-and-restore model's remaining [hardware assumptions](docs/hardware-probes.md#install-and-restore-measurements) and establish physical independent recovery before making a persistent device change.
 6. Once those paths are established, try a small UI character change, then restore the original and verify normal boot and the restored bytes.
