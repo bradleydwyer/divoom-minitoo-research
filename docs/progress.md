@@ -33,7 +33,7 @@ Results as of 13 October 2026 cover one physical MiniToo running stock firmware
 | Sample chip revision | `SYSTEM.CHIP_ID = 0x00006903`; revision D by the installed firmware's diagnostic |
 | Measure nested CLI/STI behaviour | Observed save/mask/restore sequence matched the emulator hypothesis; eight sampled caller-state words restored |
 | Read stack-bank prerequisites | Stack limits and mask/configuration words captured; no stack register was written |
-| Compare selected built-in ROM services | Two matching 4,201-byte acquisitions agreed with the reference; whole-ROM identity unproven |
+| Compare the complete exposed ROM window | Two full 131,072-byte passes, including byte zero, match each other and the preserved reference exactly; normal startup confirmed after manual restart; physical mapping, aliases and hidden areas remain unqualified |
 | Copy retained stock ADC state | VBAT/VBG rings, stored temperature and queue records captured; returned to ROM and subsequent startup reported |
 | Copy stored oscillator calibration | LRC 209.500 kHz and RCH 17.909450 MHz estimates acquired with histories/context; returned to ROM; absolute frequency and source freshness unmeasured |
 | Read PSRAM controller and clock configuration | ROM-context snapshot completed; controller enable fields clear and clock source NONE; subsequent normal startup reported; part, capacity and live application state unmeasured |
@@ -127,10 +127,21 @@ capture evidence are not included in this public source tree.
 | Chip ID `0x00006903`, revision D | One full register sample. The revision letter follows the installed diagnostic; it is not a unique device identity. |
 | Nested CLI/STI sequence | Outer CLI saved `ICFG = 0x011d0700` and cleared bit 9; the nested pair kept the masked state, and outer STI restored the entry value. Eight sampled state words matched on return. Other restore-mask bits, IRQ delivery and timing remain unmeasured. |
 | Stack prerequisites | Both sampled limit pairs were `0x00000000..0xffffffff`; `EMU_CON = 3`, `IPMASK = 0`, `GIEMASK = 0`. These raw settings do not establish enforcement, effective masking or safe stack-pointer writes. No stack aliasing test or RTI was performed. |
-| Selected ROM service bytes | Two independent acquisitions of fifteen disjoint spans matched each other and the reference. Coverage is 4,201 of 131,072 bytes; 126,871 bytes, including address zero, remain unknown. No reference bytes were substituted for holes. |
+| Complete exposed ROM window | Two complete 128 KiB passes match each other and the preserved reference, including byte zero. All 2,048 chunks were reconstructed from original replies with no holes, unstable bytes or reference substitutions. Physical mapping, aliases and hidden areas remain unqualified. |
 | Retained ADC rings | Both indices were 9. All sixteen VBAT samples were 337; VBG samples were 255 or 256, with an installed integer mean of 255. These are raw counts, not battery voltages. |
 | Stored temperature and queue | Stored temperature was 1596 firmware-converted millivolts, not raw counts or degrees. Queue channels matched stock initialization; the temperature queue value of 1 matches its initial default. Its history is unmeasured, so it is not a usable raw temperature measurement. |
 | Stored oscillator estimates | LRC average 209,500 Hz, latest 209,499 Hz; RCH average 17,909,450 Hz. Both twenty-slot histories vary and reproduce their stored averages. Progress bytes are 21 and fast-start bytes 1; these are firmware estimates using a nominal reference, not absolute frequency measurements. |
+
+The complete ROM capture supersedes the earlier 4,201-byte service-range result
+for coverage of the exposed reference window. Both images have SHA-256
+`7cae0a02e3ab3755c1e392f03c89222dd701065ec9bd3ec8ac109a7b3f40f793`.
+Offline verification checked original transfer evidence and reconstructed both
+images before comparison. The owner separately confirmed normal startup after
+the usual manual power-key restart; the raw acquisition report remains unchanged.
+The originals have a verified private off-machine backup, separate from the
+reference-resource bundles. This establishes byte identity of the exposed
+window, not every ROM routine's runtime semantics or recovery from arbitrary
+hung code.
 
 The ADC copier executed once, returned to ROM, and startup after the requested
 manual restart was reported. Original capture files were checked offline and

@@ -32,6 +32,29 @@ single-core ROM harness does not own both main CPUs, the source-32 handler,
 shared lock and live P11 mailboxes. A suitable bounded application fixture is
 needed; repeating a ROM snapshot cannot answer that concurrency question.
 
+The menu walkthrough reproduced this same lost-reply deadlock on the Date and
+time page and during a later candidate's first boot. The next qualified IPC
+test must distinguish whether reply bit 12 can generate the interrupt, whether
+shared-lock ownership excludes delivery on the peer core, or whether routing
+or acknowledgement differs. It needs a working positive interrupt control and
+bounded ownership/restoration of both cores. No runnable IPC1 payload is ready.
+
+The operator has identified the physical top-right key as Return. Its emulator
+mapping uses a source-derived ADC count, not a measured sample. A useful future
+input campaign would capture all five analog keys separately, including released
+baselines, stable ranges and the firmware's key result. Prefer qualified
+read-only observation in the normal application; entering ROM loses that context.
+This mapping campaign also needs preparation before any operator command.
+
+The Settings memory-add and subsequent packed memory AND corrections are
+qualified offline from preserved vendor evidence and focused native tests;
+they do not require another CPU batch. DAC empty-ring reconfiguration also has
+source evidence and native tests, including the later digital configuration
+write found in WhiteNoise. The corrected build passes 25 native DAC cases
+and selected WhiteNoise/game actions. Do not assume that every remaining menu
+fault requires a hardware session. Physical sample rate, gain/output and
+queued-data audio reconfiguration remain separate, unqualified questions.
+
 This page is a measurement backlog, not a ready device invocation. Prepare
 future distinguishing cases together when an actual unresolved hardware rule
 needs them. Reuse existing CPU results, oscillator estimates and ROM-context
@@ -55,11 +78,12 @@ screen. Controller/flex/PSRAM markings would also help.
 | Audio sampling ADC | Qualify effective sample rate, watermark timing, overrun, rearm and shared audio IRQ behavior | Stock code requests 44.1 kHz; ring units and ACK versus consumption ordering are source-derived. Physical sampling behavior remains unmeasured; prepare separately from retained internal-ADC observations |
 | Audio DAC | Qualify the source-derived DMA model | Functional ring playback and shared ADC/DAC interrupts pass native tests. Physical rate, gain/output, underflow and interrupt timing remain unmeasured |
 | Selected additional GPIO/backlight configuration | Check routing and PWM assumptions | Include only useful fields not already captured; distinguish ROM context from stock operation |
+| Five analog keypad buttons | Measure each physical key's ADC band and released state | Top-right Return is operator-identified and works with a source-derived emulator count. Physical counts remain unmeasured; normal-application observation or an owned ADC fixture is not yet qualified |
 | Bluetooth register access (RF0) | Establish inactive register retention before interpreting clocks or comparators | Latest parent-route and SFR-always-on stages passed, but both configuration witnesses failed retention; 32 dependent jobs skipped. Resolve ordering/ownership before another capture |
 | P11 reply and intercore exclusion (IPC1) | Determine why CPU0 can consume CPU1's synchronous reply in the emulator | Blocked on a bounded fixture owning both CPUs, source-32 handler, lock and mailboxes; no IPC1 measurement completed |
 | CPU arithmetic, carry, shifts and flags | Expand only where a specific ambiguity remains | New campaigns match after fixes, including distinguishing logical-shift/pair-subtract carry cases, rounding and saturation. Unsampled encodings, exceptions and timing remain open |
 | CPU loads/stores, read/modify/write, pairs, IF/REP and TESTSET | Qualify behavior beyond measured cases | Memory and supplement campaigns cover selected aliases, strides, DSP stores and bounded REP/parallel contexts. Unsafe aliases, memory faults and general interrupt interaction remain unmeasured |
-| Remaining main-ROM bytes | Test the reference image beyond the existing 4,201 matching bytes | Immutable mapping and address-zero acquisition still need qualification |
+| ROM mapping, aliases and hidden areas | Resolve physical organization beyond exposed-window byte identity | Two full 128 KiB passes now match the reference, including byte zero, with no holes or differences. Reuse this result; physical mapping and other areas remain unqualified |
 
 The batch must save each complete result before reusing its upload area and
 stop if transport, return or required preservation checks fail. Measurements

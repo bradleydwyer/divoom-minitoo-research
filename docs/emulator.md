@@ -3,7 +3,9 @@
 The research emulator runs unchanged firmware 343005 with its captured SD0
 content and now draws the stock clock face. The earlier Bluetooth startup
 boundary has been passed under explicit no-peer model inputs. After a CPU
-instruction correction, centre-stick input reaches a rendered menu.
+instruction correction, centre-stick input reaches a rendered menu. A later
+walkthrough entered all ten main sections, while exposing further CPU, audio
+and intercore issues.
 **Performance and intermittent startup deadlock still prevent reliable, usable
 interaction.** Results below are current to 13 October 2026.
 
@@ -43,18 +45,50 @@ boundaries. Corrections to register-count width, signed immediate offsets and
 the immediate count-32 encoding bring all measured cases into agreement. The
 490 synthetic checks also pass under the corrected policy.
 
+The next walkthrough entered **Music, ClockFace, Atmosphere, Photo, Pomodoro,
+Alarm, Tool, Game, Setting and WhiteNoise**. The Brightness slider changes and
+returns to its original position; the stopwatch advances and the countdown
+starts. Other visits establish only the entered screen, not complete feature
+operation. A Settings failure exposed a signed-offset memory-add instruction
+missing from the inherited decoder. Its correction passes 132 focused offline
+cases and allowed the walkthrough to continue. The top-right Return
+input also works from Settings and at the clock; its ADC count is source-derived,
+not a physical measurement.
+
 A separate failure is still unresolved: CPU1 requests a P11 reply while holding
 a shared lock, then CPU0's interrupt handler clears that reply before CPU1
 observes it. CPU1 waits for the flag and CPU0 waits for the lock. The captured
 emulator trace identifies that ordering; the missing physical routing or
 exclusion rule is not yet known. Smaller instruction quanta reduce observed
 failures but have not eliminated the race. Removing an instruction limit does
-not fix this deadlock.
+not fix this deadlock. It recurred on the Date and time page and during the
+first boot of a later candidate. That candidate's second cold boot progressed;
+this intermittent success does not establish a fix.
 
 The functional DAC sink consumed 244,192 stereo signed16 frames in an earlier
 image-backed run, alongside synthetic microphone capture. PCM consumption does
 not establish faithful sound reproduction or resolve decoder error code 33.
 The sink captures samples before modeled gain; browser audio is unfinished.
+The menu walkthrough exposed DAC reconfiguration faults in WhiteNoise and
+several game/tool actions. The deployed build corrects both empty-ring
+reinitialization and the following digital configuration writes. It passes
+25 native DAC cases and all 439 existing device/media comparisons. Actual
+menu checks enter WhiteNoise, exercise Right and return with Back;
+OrchardSpin animates after centre-stick input, LuckyToss performs a die action,
+and Mystic displays a prediction. The bounded sweep enters all 15 game screens;
+14 return to their matching selector. Pixel Racing stalls at START, while
+Cube Crush returns before a later carousel stall. Both captured failures
+reproduce the unresolved P11 deadlock. Wheel of Luck also stalls on a later
+action with the same verified cause. No new instruction or DAC fault appears.
+Game rules, scoring and long sessions remain unqualified. Browser playback
+and physical sample-rate and gain accuracy remain unfinished. The updated live workbench has separately passed clock-to-Music,
+Back, carousel navigation and return to the clock.
+
+Two full 128 KiB reads from the physical unit also match the emulator's preserved
+ROM image byte for byte, including byte zero. This replaces the earlier sparse
+byte comparison and removes a ROM-image mismatch from the known uncertainties;
+it does not qualify the CPU or peripheral behavior around that code. See the
+[ROM capture evidence](progress.md#hardware-observations-for-emulation).
 
 ## Core timer clock correction
 
@@ -235,9 +269,18 @@ are selected by the BR28 CPU profile, without firmware-address or asset-content
 hooks. A later signed-offset memory OR correction uses preserved source and
 vendor decoding rather than a new hardware measurement.
 
+The Settings memory-add correction covers the full signed-offset family, not
+only its observed opcode. Proactive review then found the analogous packed
+memory AND/AND-complement omission. Vendor tools qualify all 128 offset
+encodings across those two families; the correction passes 338 focused native
+cases covering masks, registers/flags, aliases, IF/REP and MMIO fault ordering.
+These source-qualified checks do not increase the physical campaign totals
+above and require no new operator probe.
+
 The reviewed-root static instruction census now has zero rejected sites, down
 from 53. This is decode coverage of those paths, not full ISA or firmware
-coverage: indirect targets, dynamic code, unreviewed paths and semantic errors
+coverage: the later Settings fault came from a broader candidate path outside
+that reviewed set. Indirect targets, dynamic code, unreviewed paths and semantic errors
 remain possible. Finite floating-point samples do not qualify NaNs, exceptions
 or all rounding modes. Timing, faults and unmeasured modes remain separate work.
 
@@ -263,7 +306,7 @@ count actual retired instructions per host wall time independently of that model
 | Storage | Captured program flash and read-only SD0 image, guest filesystem mounts and content reads; removable-card workbench integration remains unfinished |
 | USB0 | Explicit disconnected-peer detection profile; no packet transfer or general USB protocol model |
 | RTC | Bounded configuration and static time snapshot with delayed completion; no advancing calendar or alarm |
-| Internal ADC and inputs | Selected channels, external PB9, completion/IRQ handling and explicit startup inputs; joystick/button-1 GPIO delivery checked, analog buttons unavailable |
+| Internal ADC and inputs | Selected channels, external PB9, completion/IRQ handling and explicit startup inputs; joystick/button-1 GPIO delivery checked; ADC input for top-right Return tested, other analog keys unfinished |
 | PSRAM | Startup commands and bounded RAM backing; capacity and timing remain explicit assumptions |
 | Display | IMD transfers, RGB565 framebuffer, completion and interrupts; physical color, orientation and bus timing remain unqualified |
 | PWM | Reached timer/channel configuration retained; no waveform generation |
@@ -272,17 +315,21 @@ count actual retired instructions per host wall time independently of that model
 | Auxiliary processor | Limited P11 interface behavior; its separate instruction stream is not executed |
 | Wireless | Source-derived Bluetooth initialization, clocks, LE links and no-peer discovery policies; physical register liveness, timing and interrupt semantics remain unqualified |
 
-The DAC change passes 17 native guest tests and 36 native ADC regression guests.
+The original DAC change passed 17 native guest tests and 36 native ADC regression guests.
 Checks include exact PCM bytes/order, ring wrap, real interrupt entry/return,
 MMU aliases and invalid-access refusals. Portable DAC/ADC suites also pass with
 AddressSanitizer and UndefinedBehaviorSanitizer, including 250 DAC and 1,505 ADC
 timing-oracle cases. These are offline software checks, not additional physical
-measurements. The workbench backend, core and runner tests pass as well.
+measurements. The later drained-ring correction expands the DAC suite to 25,
+including full prepare/configure/trigger ordering and refusals before invalid
+publication. The workbench backend, core and runner tests pass as well.
 
 An explicit four-instruction scheduling quantum passed earlier selected P11
 reply/shared-lock tests, but later stock runs still exhibit the race described
-above. It does not establish physical multicore timing. Only 4,201 of
-the reference ROM's 131,072 bytes have been matched to this unit.
+above. It does not establish physical multicore timing. Two complete captures
+now match all 131,072 bytes of the exposed ROM window to the preserved reference,
+including byte zero. Physical mapping, aliases and hidden areas remain
+unqualified; see the [hardware results](progress.md#hardware-observations-for-emulation).
 
 ## Startup and input limits
 
@@ -300,7 +347,7 @@ application state; the corrected core-timer smoke above reaches the Music menu.
 Broader menu behavior and physical input timing remain unqualified.
 
 Remaining work includes reliable clock/menu interaction, native performance,
-broader checkpoint coverage, decoder completion, analog buttons, browser sound and
+broader checkpoint coverage, decoder completion, remaining analog buttons, browser sound and
 further peripheral fidelity.
 A passive panel capture could qualify physical orientation, pixel byte order
 and clock rate; the source interpretations of the divider disagree. See the
