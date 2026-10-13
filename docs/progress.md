@@ -37,8 +37,8 @@ Results as of 13 October 2026 cover one physical MiniToo running stock firmware
 | Copy retained stock ADC state | VBAT/VBG rings, stored temperature and queue records captured; returned to ROM and subsequent startup reported |
 | Copy stored oscillator calibration | LRC 209.500 kHz and RCH 17.909450 MHz estimates acquired with histories/context; returned to ROM; absolute frequency and source freshness unmeasured |
 | Read PSRAM controller and clock configuration | ROM-context snapshot completed; controller enable fields clear and clock source NONE; subsequent normal startup reported; part, capacity and live application state unmeasured |
-| Run a RAM-only display attempt | Executed and returned to ROM, but timed out on the first byte; zero completed bytes confirmed and backlight not enabled |
-| Boot normally after the display attempt | Confirmed using the tested manual power-key restart |
+| Run RAM-only display attempts | Four attempts, none visible. The display-peripheral program timed out on its first byte. Two direct-GPIO runs stopped at an unsupported pin check, since removed; the third lost USB mid-run and left the screen blank. [Details](#display-attempts) |
+| Boot normally after display attempts | Confirmed after the first and latest attempts using the tested manual power-key restart |
 | Audit menu/input source evidence offline | All 13 installed ranges matched; 25 instruction sites and all 65,536 ADC decoder counts checked. No hardware access or new physical input/IRQ qualification |
 | Measure five analog keypad buttons | Isolated-ROM PB9 fixture captured 32 samples per hold/release phase, 352 total: top-middle 0–1, top-right 108, bottom-left 244–245, bottom-middle 373, bottom-right 491–492; every released sample is 1023. Saved protocol/native results and guards revalidated offline. Stock scanner/remapped events/UI were not observed; final restart confirmation remains pending |
 | Rehearse firmware installation and restoration offline | Four fresh processes complete ROM USB/guest SPI installation, original-ROM/loader custom boot, ROM USB restoration and original-ROM/loader stock startup. The complete 2 MiB target returns to its original bytes; all 439 existing device cases match. Reset, identity and cold-entry inputs remain modeled fixtures; physical recovery and full stock UI are unproved. [Scope](emulator.md#install-and-restore-rehearsal) |
@@ -112,11 +112,15 @@ content has now been acquired. See the [firmware analysis summary](firmware-anal
 for the scope, recorded validation and remaining work. No hardware commands were
 sent during that investigation.
 
-## Display attempt
+## Display attempts
 
 The first display program passed its upload, readback and execution checks and returned to ROM. It hit its polling limit before confirming completion of the first byte. Its register-restoration checks passed, and normal stock boot was confirmed after the manual power-key restart. No visible display success was established.
 
 The attempt changed display peripheral settings, but did not enable the backlight or send a panel reset or initialization sequence. Zero confirmed completed bytes does not prove that no signal reached the panel. Display setup remains under investigation; this result is not a reason to repeat the same attempt or extend its timeout.
+
+Three later attempts used a separate program that drives the display pins directly from the CPU instead of through the display peripheral. The first two stopped at their first pin check, before any reset sequence or command byte. That check read the input register while the pins were in output mode, which the vendor's GPIO documentation does not support; a later revision removed it. The third run uploaded and verified the whole program and image, then lost USB during execution. The screen stayed blank, and the device booted normally after the manual restart.
+
+While that program ran, the ROM's USB loop, which normally clears the watchdog, was not running. Watchdog expiry is therefore a plausible cause of the USB loss, but not a confirmed one. A revision that services the existing watchdog without changing its settings has not run on hardware. No visible display output has been established.
 
 ## Hardware observations for emulation
 
@@ -230,7 +234,7 @@ Offline correctness and performance work can continue independently.
 ## Still to come
 
 - Make clock/menu interaction usable: improve native speed, broaden checkpoint coverage and address intermittent P11 deadlock. Confirm broader menu behavior and audio decoding. Reuse completed CPU measurements; batch future probes around concrete unresolved rules.
-- Diagnose the display setup, then demonstrate visible output from RAM code.
+- Demonstrate visible output from RAM code, starting with the watchdog-servicing display revision.
 - Close the remaining firmware behaviour and decompiler gaps. Physical CPU comparisons cover a small subset; broader offline model checks do not establish a complete MiniToo.
 - Establish and review installation, recovery and rollback paths that do not depend on a working application.
 - Only after those paths are established, install a small UI character change, restore the original and verify boot plus the restored firmware bytes.

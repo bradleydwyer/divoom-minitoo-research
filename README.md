@@ -1,26 +1,31 @@
 # Divoom MiniToo research
 
-Research into running custom code on the [MiniToo](https://divoom.com/products/minitoo) in place of its existing firmware, building a full hardware emulator, and developing tools to restore the original firmware.
+Research into running our own code on Divoom's [MiniToo](https://divoom.com/products/minitoo) in place of its stock firmware. The work has three parts: running custom code on the device, an emulator that runs the unchanged stock firmware, and tools to back up and restore the original firmware.
+
+The MiniToo uses a Jieli BR28 chip with two PI32v2 CPU cores. All device results so far come from one unit running stock firmware 343005.
 
 > [!WARNING]
 > **Work in progress. Use at your own risk.**
 >
-> This is unfinished research. Running these tools could brick your MiniToo or cause data loss. Live experiments have only been tested on one device. Restoring a backup and recovering from broken firmware are still unproven.
+> This is unfinished research. Running these tools could brick your MiniToo or cause data loss. Live tools have only been tested on one device. Restoring a backup and recovering from broken firmware are still unproven.
 >
 > **Please don't rush into running the live tools yet.** Read the linked notes and understand the risks first. RAM-only code and read-only flash operations are not risk-free.
 
-## Our first little firmware
+## Our first standalone program
 
-<img src="docs/images/robot-splash.png" width="240" height="192" alt="Orange robot drawn by our standalone firmware in the emulator, with the second button indicator lit">
+<img src="docs/images/robot-splash.png" width="240" height="192" alt="Orange robot drawn by our standalone program in the emulator, with the second button light lit">
 
-A little orange robot, drawn by our own code in the emulator. The five lights
-respond to the five small buttons. This 41 KB RAM program has its own startup
-and display code; it has not been run on the physical MiniToo yet.
+A little orange robot, drawn by our own code running in the emulator. The five
+lights below it respond to the five small buttons. The 41 KB program has its own
+startup and display code and uses no stock firmware or ROM code. It runs from
+RAM and has not been tried on the physical MiniToo yet.
 [What runs and what remains](docs/robot-splash.md).
 
 ## Where things stand
 
-Progress as of **13 October 2026**, covering one physical MiniToo and offline emulation:
+As of **13 October 2026**.
+
+### On the device
 
 <table>
   <colgroup>
@@ -31,46 +36,63 @@ Progress as of **13 October 2026**, covering one physical MiniToo and offline em
     <tr><th width="28%">Work</th><th>Result</th></tr>
   </thead>
   <tbody>
-    <tr><td width="28%"><a href="docs/usb-and-ram.md">Run custom code from RAM</a></td><td><strong>Succeeded.</strong> Uploaded code, checked its bytes, executed it and verified its result and return to built-in ROM.</td></tr>
-    <tr><td width="28%"><a href="docs/emulator.md">Build an initial emulator</a></td><td><strong>Built.</strong> The published RAM-only fixtures run small PI32v2 test programs. A separate BR28 board model now executes stock startup and models the peripherals needed so far.</td></tr>
-    <tr><td width="28%"><a href="docs/emulator.md">Check the emulator against the device</a></td><td><strong>Succeeded for the tested cases.</strong> Four campaigns totaling 13,450 CPU cases match native emulator replay after corrections, extending the earlier CPU/trim and 28-program edge results. This is finite instruction coverage, not a complete ISA qualification.</td></tr>
-    <tr><td width="28%"><a href="docs/progress.md#hardware-observations-for-emulation">Measure hardware state for emulation</a></td><td><strong>Captured.</strong> Chip revision, nested CLI/STI behaviour, stack configuration, retained ADC values and stored oscillator estimates were sampled on the device. These cover specific observations, not full peripheral behaviour.</td></tr>
-    <tr><td width="28%"><a href="docs/progress.md#hardware-observations-for-emulation">Compare the exposed built-in ROM window</a></td><td><strong>Complete byte identity verified.</strong> Two full 128 KiB passes, including byte zero, match each other and the preserved reference with no holes or differences. Normal startup after manual restart was confirmed. Physical mapping, aliases and hidden areas remain unqualified.</td></tr>
-    <tr><td width="28%"><a href="docs/emulator.md#stock-firmware-emulation-in-the-research-checkout">Full hardware emulation target</a></td><td><strong>All ten main menu sections entered.</strong> Unchanged firmware mounts captured SD0 content and renders its clock and menus. Settings and drained-audio reconfiguration faults are fixed; menu checks exercise the brightness slider, timers, WhiteNoise and selected game actions. Full feature coverage, browser audio and physical sound fidelity remain unfinished; a recurring P11 intercore deadlock and slow interaction remain.</td></tr>
-    <tr><td width="28%"><a href="docs/emulator.md#stock-firmware-emulation-in-the-research-checkout">Emulated display</a></td><td><strong>Stock clock graphics render.</strong> An explicit display DMA byte-order profile corrects the previously scrambled palette. One replay completes 272 display transfers without a CPU or MMIO fault. Exact physical colors, orientation and bus timing remain unqualified.</td></tr>
-    <tr><td width="28%"><a href="docs/workbench.md">Browser workbench</a></td><td><strong>Built in the research checkout.</strong> Live display, separate modeled-device/session-wall clocks, uncapped runs and same-build checkpoints. All five measured ADC buttons are connected; native conversion, browser ownership/release and recording/replay checks pass. Physical stock button meanings and timing, removable-card integration and browser audio remain unfinished. Full sources are not yet included here.</td></tr>
-    <tr><td width="28%"><a href="docs/flash-backup.md">Read the main flash</a></td><td><strong>Succeeded.</strong> Identified the chip and obtained two matching complete 2 MiB reads.</td></tr>
-    <tr><td width="28%"><a href="docs/storage-backup.md">Back up separate SD0 content</a></td><td><strong>Succeeded for the exposed logical area.</strong> Two complete 120 MiB images match, with no holes or changed sectors. A private off-machine backup was downloaded and verified. Physical part identity, other areas and restoration remain unproven.</td></tr>
-    <tr><td width="28%"><a href="docs/firmware-analysis.md">Decompile and analyse the captured firmware</a></td><td><strong>Analysis pass completed.</strong> REA exported 1,201 reachable procedures, and every application byte was checked against the vendor listing. Complete behavioural reverse engineering remains unfinished.</td></tr>
-    <tr><td width="28%"><a href="docs/rom-mode.md">Leave idle ROM and boot normally</a></td><td><strong>Succeeded.</strong> The tested power-button procedure returned the device to stock firmware, including after the display attempt below.</td></tr>
-    <tr><td width="28%"><a href="docs/robot-splash.md">Run our own display and button program</a></td><td><strong>Succeeded in the emulator.</strong> A standalone 41 KB RAM application draws the robot above and lights an indicator for each of the five ADC buttons. Actual rendered pixels and press/release transitions match the offline oracle. Physical execution remains untested.</td></tr>
-    <tr><td width="28%">Show something using a RAM display program on the physical device</td><td><strong>Attempted, unsuccessful.</strong> The earlier program ran and returned to ROM, but timed out on the first byte. Zero completed bytes were confirmed; the backlight was not enabled.</td></tr>
-    <tr><td width="28%"><a href="docs/emulator.md#install-and-restore-rehearsal">Rehearse firmware installation and restoration offline</a></td><td><strong>Bounded sequence passes.</strong> Original ROM USB and a guest SPI writer install a minimal custom entry, a fresh ROM/loader boot verifies its witness, recovery restores the complete original array, and another fresh boot executes stock startup. Reset, identity and cold-entry inputs remain modeled; physical restoration is unproven.</td></tr>
-    <tr><td width="28%">Install modified firmware on the device, then restore the original</td><td><strong>Not attempted.</strong> Installation, recovery from broken firmware and restoration remain unproven.</td></tr>
+    <tr><td width="28%"><a href="docs/usb-and-ram.md">Run custom code from RAM</a></td><td><strong>Done.</strong> Code is uploaded over USB, checked byte for byte, run, and returns control to the built-in ROM.</td></tr>
+    <tr><td width="28%"><a href="docs/rom-mode.md">Leave ROM mode and boot normally</a></td><td><strong>Done.</strong> A tested power-button procedure returns the device to its stock firmware, including after display attempts.</td></tr>
+    <tr><td width="28%"><a href="docs/flash-backup.md">Read the main flash</a></td><td><strong>Done.</strong> Identified the chip and made two matching complete 2 MiB reads.</td></tr>
+    <tr><td width="28%"><a href="docs/storage-backup.md">Back up the separate SD0 storage</a></td><td><strong>Done for the exposed area.</strong> Two complete 120 MiB images match. The physical part, other storage areas and restoring it are unproven.</td></tr>
+    <tr><td width="28%"><a href="docs/progress.md#hardware-observations-for-emulation">Read the built-in ROM</a></td><td><strong>Done.</strong> Two full reads of the exposed 128 KiB window match each other and the preserved reference byte for byte. Hidden areas and the physical address mapping are unverified.</td></tr>
+    <tr><td width="28%"><a href="docs/progress.md#hardware-observations-for-emulation">Measure hardware behavior for the emulator</a></td><td><strong>Partial.</strong> Chip revision, interrupt masking, stack configuration, button and ADC readings, and stored oscillator estimates were sampled. These are specific observations, not full peripheral behavior.</td></tr>
+    <tr><td width="28%"><a href="docs/progress.md#display-attempts">Show an image from RAM code</a></td><td><strong>Not working yet.</strong> Four attempts have run without a visible image. The latest lost its USB connection mid-run, possibly because the watchdog expired; a revised program that services the watchdog has not run yet.</td></tr>
+    <tr><td width="28%">Install modified firmware, then restore the original</td><td><strong>Not attempted.</strong> Nothing has been written to flash. Installing, recovering from broken firmware and restoring are unproven.</td></tr>
   </tbody>
 </table>
 
-Nothing has been flashed. A readable backup does not establish that we can restore it. The button procedure has been tested from idle ROM; recovery from arbitrary hung code or damaged firmware is still unproven. See [detailed progress](docs/progress.md) for the checks and their limits.
+### Offline
+
+<table>
+  <colgroup>
+    <col width="28%">
+    <col width="72%">
+  </colgroup>
+  <thead>
+    <tr><th width="28%">Work</th><th>Result</th></tr>
+  </thead>
+  <tbody>
+    <tr><td width="28%"><a href="docs/emulator.md#published-ram-only-fixtures">Emulate the CPU</a></td><td><strong>Done.</strong> The published fixtures run small PI32v2 test programs without a device.</td></tr>
+    <tr><td width="28%"><a href="docs/emulator.md#cpu-measurements-and-coverage">Match the emulator to the device</a></td><td><strong>Done for 13,450 cases.</strong> Four campaigns of CPU cases recorded on the device match the emulator after corrections. This covers the tested instructions, not the whole instruction set.</td></tr>
+    <tr><td width="28%"><a href="docs/emulator.md#stock-firmware-emulation-in-the-research-checkout">Run the unchanged stock firmware</a></td><td><strong>Partial.</strong> A board model in the private research repository boots the stock firmware, mounts the storage captured from the device and shows its clock and menus; all ten main menu sections open. Many features and audio are unfinished, it runs slower than real time, and an intermittent deadlock between the two CPU cores remains.</td></tr>
+    <tr><td width="28%"><a href="docs/emulator.md#stock-firmware-emulation-in-the-research-checkout">Emulate the display</a></td><td><strong>Partial.</strong> Stock clock graphics render, with the scrambled palette fixed. Exact physical colors, orientation and bus timing are unverified.</td></tr>
+    <tr><td width="28%"><a href="docs/workbench.md">Use the emulator from a browser</a></td><td><strong>Partial.</strong> Live screen, all five buttons, recording and replay, and saved checkpoints work. Confirming what each button does in stock firmware, removable-card support and browser audio are unfinished. Sources are not yet published here.</td></tr>
+    <tr><td width="28%"><a href="docs/robot-splash.md">Run our own display and button program</a></td><td><strong>Done in the emulator.</strong> The robot program's pixels and button responses match an independent check. It has not run on the device.</td></tr>
+    <tr><td width="28%"><a href="docs/emulator.md#install-and-restore-rehearsal">Rehearse install and restore</a></td><td><strong>Done offline.</strong> Through the original ROM's USB path, the emulator installs a minimal custom program, boots it, restores the complete original flash and boots stock firmware again. Reset, chip identity and cold-start inputs are modeled, not measured; physical restoration is unproven.</td></tr>
+    <tr><td width="28%"><a href="docs/firmware-analysis.md">Decompile and analyze the firmware</a></td><td><strong>First pass done.</strong> 1,201 reachable procedures were exported with pseudocode, and every application byte was checked against the vendor listing. Full behavioral reverse engineering remains.</td></tr>
+  </tbody>
+</table>
+
+[Detailed progress](docs/progress.md) lists every check and its limits.
 
 ## What comes next
 
-1. Improve native execution speed and startup reliability, and extend the menu walkthrough beyond entry screens. Timer/interrupt and device-deadline improvements are in use; execution remains below real time. Headless measurements show the browser bridge is not the main slowdown. Same-build checkpoints let tested states resume without repeating boot.
-2. Resolve the observed P11 intercore reply race and qualify remaining CPU/peripheral rules through the [hardware backlog](docs/hardware-probes.md). The latest radio batch did not establish register liveness; its dependent tests were skipped.
-3. Diagnose the physical display peripheral setup and get a visible RAM-only demo working on the device.
-4. Fill the remaining gaps in command handling, display/audio, storage and firmware behaviour.
-5. Qualify the offline install-and-restore model's remaining [hardware assumptions](docs/hardware-probes.md#install-and-restore-measurements) and establish physical independent recovery before making a persistent device change.
-6. Once those paths are established, try a small UI character change, then restore the original and verify normal boot and the restored bytes.
+1. Show a visible image on the device from RAM code, starting with the revised program that services the watchdog.
+2. Make the emulator faster and more reliable. It still runs slower than real time, and the intermittent P11 deadlock between the CPU cores needs a fix.
+3. Extend stock-firmware coverage beyond the menu entry screens, including features, audio, storage and command handling.
+4. Measure the remaining CPU and peripheral behavior on the device; see the [hardware backlog](docs/hardware-probes.md).
+5. Verify the install-and-restore rehearsal's [hardware assumptions](docs/hardware-probes.md#install-and-restore-measurements) and prove the device can be recovered without working firmware, before making any permanent change.
+6. Then make a small change to the stock UI on the device, restore the original, and verify normal boot and the restored bytes.
 
 ## Leaving ROM mode
 
-After a live tool has finished, hold the **front-left orange power button for about ten seconds**, then **release as soon as the startup animation appears**. Let it finish booting. If normal USB is missing, reconnect the cable once after startup. Continued holding can cause repeated restarts. See the [ROM-exit guide](docs/rom-mode.md) for USB checks, failure handling and the limits of this tested procedure.
+The live tools leave the MiniToo in its built-in USB ROM mode when they finish, and the screen may be dark. Wait for the tool to finish, then hold the **front-left orange power button for about ten seconds** and **release as soon as the startup animation appears**. Let it finish booting. If normal USB is missing, reconnect the cable once after startup. Holding longer can cause repeated restarts.
+
+This procedure has only been tested from idle ROM; it is not known to recover the device from hung code or damaged firmware. The [ROM-exit guide](docs/rom-mode.md) covers USB checks, what to do if it fails and the limits of the tested procedure.
 
 ## Read more
 
-- [Progress](docs/progress.md): what has worked on the physical MiniToo.
-- [Firmware analysis](docs/firmware-analysis.md): the completed decompilation and analysis pass, its findings and remaining gaps.
-- [Offline emulator checks](docs/emulator.md): small CPU tests, results from the MiniToo, and how to reproduce them without a device.
+- [Progress](docs/progress.md): every check so far, on the device and in the emulator, with its limits.
+- [Firmware analysis](docs/firmware-analysis.md): the decompilation and analysis pass, its findings and remaining gaps.
+- [Emulator](docs/emulator.md): stock-firmware emulation, CPU tests checked against the device, and how to run the published fixtures without one.
 - [Browser workbench](docs/workbench.md): local screen/control tools, their QEMU connection, and remaining input, removable-storage and audio work.
+- [Hardware backlog](docs/hardware-probes.md): measurements still needed from the device.
 - [USB and RAM](docs/usb-and-ram.md): how small programs reach the device and return.
 - [Leaving ROM mode](docs/rom-mode.md): the tested button procedure and how to check normal USB has returned.
 - [Flash backup](docs/flash-backup.md): the backup path, operation and limits.
@@ -78,7 +100,7 @@ After a live tool has finished, hold the **front-left orange power button for ab
 - [Technical notes](docs/technical-notes.md): memory bounds, checks and builds.
 - [References](docs/references.md): earlier work, sources and specifications.
 
-Host tools live in [`tools/`](tools/); small device programs are in [`firmware/`](firmware/). Vendor firmware, APKs, raw device captures and research archives are not distributed here.
+Host tools are in [`tools/`](tools/), small device programs in [`firmware/`](firmware/) and hardware-free tests in [`tests/`](tests/). Vendor firmware, APKs, raw device captures and research archives are not distributed here, and the full emulator and workbench sources are not yet published.
 
 ## Offline checks
 
@@ -91,4 +113,6 @@ python3 -m venv .venv
 
 Tests and `--plan` do not access hardware. Read the [backup notes](docs/flash-backup.md) before running a live tool.
 
-Original code and text are licensed under [MIT](LICENSE), unless marked otherwise. The emulator C fixtures use GPL-2.0-or-later; their Python tooling uses Apache-2.0. See [NOTICE](NOTICE) for file-specific terms and third-party credits. This independent project is not affiliated with Divoom.
+## License
+
+Original code and text are licensed under [MIT](LICENSE) unless marked otherwise. The emulator C fixtures are GPL-2.0-or-later and their Python tooling is Apache-2.0. [NOTICE](NOTICE) lists file-specific terms and third-party credits, including the [fm1-emulator](https://github.com/simonjohansson/fm1-emulator) CPU implementation the fixtures build on. This is an independent project, not affiliated with Divoom.
