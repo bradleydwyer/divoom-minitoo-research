@@ -26,6 +26,7 @@ Results as of 13 October 2026 cover one physical MiniToo running stock firmware
 | Save and restore emulator state | Same-build save/resume is available in the local workbench; eleven fresh-process continuation scenarios cover CPU/peripherals, storage and audio. A 74-second stock-startup state restored in 0.60 seconds and continued; broader firmware-state coverage remains unfinished |
 | Investigate emulator speed | The optimized build is running in the local workbench. Three-run medians for 100 million startup instructions improved from 7.097 to 3.732 seconds (1.90× throughput). A clock-screen continuation improved from 4.969 to 3.709 seconds against the intermediate build (1.34×); these baselines differ. The final executable passes 439 exact device comparisons and expanded checkpoint, concurrency and debugger checks. Interactive execution remains slow; [measurements and limits](emulator.md#speed-and-resumable-state) |
 | Probe isolated Bluetooth registers | First 32-job batch completed, but all radio readbacks were zero. Follow-up RF0 witnesses failed retention even with the SFR-always-on setting retained; 32 dependent jobs were skipped in the latest batch. Timing and interrupt semantics remain unqualified |
+| Measure CPU and SRAM timing | 149 groups completed across 49 streams and three loop lengths; all 1,029 paired triplets reconstruct from preserved samples. Relative costs are resolved at the largest size, but the old nominal timer frequency is contradicted by host bounds; physical seconds/cycles remain uncalibrated |
 | Run storage-path, memory and consolidated CPU campaigns | 1,680 + 2,292 + 5,968 cases completed and match native replay after fixes. Normal startup after each final manual restart separately confirmed |
 | Consume guest PCM offline | Functional DAC sink consumes 244,192 stereo signed16 frames; shared ADC/DAC interrupt tests pass. Faithful sound reproduction and decoder completion remain unqualified |
 | Sample chip revision | `SYSTEM.CHIP_ID = 0x00006903`; revision D by the installed firmware's diagnostic |
@@ -49,6 +50,22 @@ press as an animated Divoom logo on black, further animations and sounds, then
 the default clock face. HOT-heart was absent. Battery animation was mainly
 seen after a long reset, not the latest ordinary power-off/on cycle. These
 operator observations are separate from emulator results and measured timing.
+
+## Latest CPU timing results
+
+A first timing campaign measured 49 arithmetic, floating-point, branch and SRAM
+streams at three loop lengths. All 149 groups completed, and offline verification
+reconstructed all 1,029 paired triplets from the preserved transfer evidence.
+The largest-count samples resolve every stream. In these specific loops,
+integer division costs about 17 times the dependent-add reference, and dependent
+pointer loads cost about 3.23 times that reference. These are incremental stream
+costs, not isolated instruction latencies.
+
+Enclosing host intervals establish that the reference timer ran faster than
+748 kHz, contradicting its earlier nominal 375 kHz annotation. A 750 kHz source
+is plausible but uncalibrated. No physical cycles or nanoseconds are claimed;
+a fixed calibration follow-up is being prepared. The captured ROM clock and
+memory configuration also does not establish the later application's timing.
 
 ## Firmware analysis
 

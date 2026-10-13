@@ -170,6 +170,19 @@ coverage: indirect targets, dynamic code, unreviewed paths and semantic errors
 remain possible. Finite floating-point samples do not qualify NaNs, exceptions
 or all rounding modes. Timing, faults and unmeasured modes remain separate work.
 
+## First CPU and SRAM timing measurements
+
+A separate physical timing campaign completed 149 groups covering 49 streams at
+three loop lengths. All 1,029 paired triplets reconstruct from the original
+samples. It distinguishes arithmetic, division, taken branches, dependent loads
+and memory DSP costs, but does not yet calibrate physical instruction cycles.
+The previous nominal timer frequency is contradicted by enclosing host bounds;
+clock calibration is the next measurement. See the [timing results](progress.md#latest-cpu-timing-results).
+
+These observations do not change the emulator's current uniform instruction-time
+assumption into a measured hardware model. Performance comparisons continue to
+count actual retired instructions per host wall time independently of that model.
+
 ## Board models and validation
 
 | Area | Implemented scope and main limits |
