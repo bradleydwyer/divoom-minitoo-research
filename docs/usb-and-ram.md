@@ -1,13 +1,31 @@
 # USB and RAM
 
-The tested BR28 unit identifies as `4c4a:4e55 / BR28 UDISK` in the application and `4c4a:3442 / BR28 UBOOT1.00` in built-in ROM. The host checks exact identity and twelve pinned ROM excerpts before calling a fixed payload. Licensed excerpt sources are identified in NOTICE.
+The live tools run small programs from the MiniToo's RAM over USB, using commands provided by the chip's built-in ROM. These are RAM programs, not installed firmware: nothing is written to flash, and each program returns control to the ROM when it finishes. This page explains how a program reaches the device, how each run is checked and how the device gets back to normal.
 
-A standard INQUIRY identifies the device. A fixed vendor command requests ROM entry; the device disconnects and re-enumerates. An I/O error during that transition is not sufficient: new ROM identity and matching fingerprints establish entry.
+## Entering ROM mode
 
-`FB06` uploads bounded encoded RAM, `FD07` reads it through a reversible in-place transform, and `FB08` calls the pinned entry. Complete upload readback must match first. Since the read transform temporarily changes its source, the tools read owned buffers instead of arbitrary live memory or the flash aperture.
+The tested BR28 unit identifies as `4c4a:4e55 / BR28 UDISK` in its normal application and as `4c4a:3442 / BR28 UBOOT1.00` in built-in ROM.
 
-The smallest program changes one expected word and returns. Larger programs have separately pinned bytes, bounded results and private stacks. Each host helper checks its result and ROM return. These are RAM programs, not installed firmware.
+The host first identifies the device with a standard INQUIRY. It then sends a fixed vendor command that requests ROM entry, and the device disconnects and re-enumerates. An I/O error during that transition does not by itself show that entry succeeded. Entry is established only by the new ROM identity and matching ROM fingerprints.
 
-The [ROM-exit guide](rom-mode.md) gives the tested front-left power-button procedure, release timing, USB reconnection and an OS-only USB check. Recovery from arbitrary hung code or a broken application is not established.
+Before calling any payload, the host checks the exact USB identity and twelve pinned ROM excerpts, which serve as those fingerprints. NOTICE identifies the sources of these licensed excerpts.
 
-On macOS, capture needs administrator privileges and temporarily detaches all device interfaces, including audio. `minitoo_usb_inventory.py` reads OS metadata without sending USB requests. Offline tests and plans never launch live commands.
+## Uploading and running a program
+
+Three ROM commands do the work:
+
+- `FB06` uploads a bounded, encoded block of RAM.
+- `FD07` reads RAM back through a reversible in-place transform.
+- `FB08` calls the program at its pinned entry point.
+
+The complete upload must read back correctly before the program is called. Because the read transform temporarily changes the memory it reads, the tools read only buffers they own. They never read arbitrary live memory or the flash aperture, the window where flash is mapped into memory.
+
+The smallest program changes one expected word and returns. Larger programs have separately pinned bytes, bounded results and private stacks. Each host helper checks its program's result and the return to ROM.
+
+## Returning to normal
+
+The device stays in ROM mode afterwards. The [ROM-exit guide](rom-mode.md) gives the tested front-left power-button procedure, its release timing, USB reconnection and a USB check that reads only OS metadata. Recovery from arbitrary hung code or a broken application is not established.
+
+## Host requirements
+
+On macOS, live capture needs administrator privileges and temporarily detaches all of the device's interfaces, including audio. `minitoo_usb_inventory.py` reads OS metadata without sending USB requests. Offline tests and plans never launch live commands.

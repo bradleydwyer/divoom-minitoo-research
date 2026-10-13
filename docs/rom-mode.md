@@ -1,8 +1,9 @@
 # Leaving ROM mode
 
 The live research tools deliberately leave the MiniToo in its built-in USB ROM
-mode after completing. The screen can be dark in this mode. The tested exit
-procedure below brought one stock-firmware 343005 unit back to normal operation.
+mode when they finish. The screen can be dark in this mode. The tested exit
+procedure below brought one unit running stock firmware 343005 back to normal
+operation.
 
 ## Tested button procedure
 
@@ -36,23 +37,23 @@ This reads OS registry metadata, sends no USB requests and does not require
 | Normal application | `4c4a:4e55` | `BR28 UDISK 1.00` |
 | Built-in ROM | `4c4a:3442` | `BR28 UBOOT1.00 1.00` |
 
-The inventory's `mode_hint` should say `application` after a successful return.
-If no matching device appears, that alone does not establish whether it is
+After a successful return, the inventory's `mode_hint` should say `application`.
+If no matching device appears, that alone does not show whether the device is
 powered off, booting or failing to enumerate. A working screen and USB
 enumeration are separate observations. Live helpers that require fresh
-application USB will refuse to start while ROM is still visible.
+application USB refuse to start while ROM is still visible.
 
 ## Software reset and limits
 
 The separate `minitoo_rom_check.py --exit-rom` action checks ROM identity and
-fingerprints before calling the ROM reset routine. In the original physical
-test, software reset disconnected USB and automatic application return timed
-out; manual power-on and cable reconnection were still needed. The button
-procedure above is the tested manual exit path.
+fingerprints before calling the ROM's reset routine. In the original physical
+test, the software reset disconnected USB and the automatic return to the
+application timed out; manual power-on and cable reconnection were still needed.
+The button procedure above is the tested manual exit path.
 
 This procedure was demonstrated from idle ROM reached through intact stock
 firmware. Normal startup was also reported after the completed RAM experiments
 and main-flash dump. It has not been shown to recover from arbitrary hung RAM
 code, damaged application firmware or a failed flash write. Restoring a backup
-remains unproven, and pairing/settings retention was not separately measured
-during the button check.
+remains unproven. Whether pairing and settings are retained was not separately
+measured during the button check.

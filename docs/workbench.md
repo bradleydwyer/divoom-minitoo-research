@@ -1,14 +1,19 @@
 # Browser workbench
 
-A local browser workbench has been built for the MiniToo emulator under
-development. It provides a screen and controls in an original retro-computer
-case, with no Divoom photographs, logos or boot artwork.
+The browser workbench is a local tool for running and watching the MiniToo
+emulator. It shows the screen and controls in an original retro-computer case,
+with no Divoom photographs, logos or boot artwork. It runs entirely on the host
+and does not access the physical MiniToo.
 
-**The workbench implementation is currently in the research checkout. This
-public source tree does not yet include it or the BR28 machine integration.**
-The [published emulator instructions](emulator.md) still describe the earlier
+**The workbench and the BR28 machine integration are in the private research
+repository. This public source tree does not include them yet.** The
+[published emulator instructions](emulator.md) still describe the earlier
 RAM-only fixtures. This page records the workbench's scope and integration
 boundary as of 13 October 2026.
+
+In the workbench, unchanged stock firmware reaches its clock face and menus.
+Interaction is slow, an intermittent deadlock remains, and browser sound
+playback is not implemented.
 
 ## How it connects
 
@@ -16,68 +21,79 @@ boundary as of 13 October 2026.
 Browser UI <-- local HTTP --> Python server <-- QMP socket --> native QEMU
 ```
 
-The Python server launches its own QEMU process using an explicit local run
-configuration. QEMU executes the firmware. The browser receives images and sends
-button events; it does not run the CPU emulator in JavaScript or WebAssembly.
-The workbench does not automatically pick up a new emulator build.
+The Python server launches its own QEMU process from an explicit local run
+configuration, and QEMU executes the firmware. The browser receives images and
+sends button events; it does not run the CPU emulator in JavaScript or
+WebAssembly. The workbench does not automatically pick up a new emulator build.
 
 | Tool | Current implementation |
 | --- | --- |
 | Screen | Reads the emulator's framebuffer, converts it to PNG and displays it in the browser. The headless build uses a small read-only QOM property because its QMP screenshot command is absent. |
 | Pause and run | Standard QMP `stop` and `cont`. |
-| Restart | Starts a fresh owned QEMU process, paused at the configured entry point. |
-| Clocks | Displays accumulated modeled device time separately from elapsed wall time of the host session. Model seconds are not calibrated physical seconds. |
-| Run limit | Interactive sessions can run without an instruction cutoff; fault checks remain active. This does not resolve a deadlock. |
+| Restart | Starts a fresh QEMU process owned by the server, paused at the configured entry point. |
+| Clocks | Displays accumulated modeled device time separately from the host session's elapsed wall time. Model seconds are not calibrated physical seconds. |
+| Run limit | Interactive sessions can run without an instruction cutoff; fault checks remain active. Removing the cutoff does not resolve a deadlock. |
 | Checkpoints | Same-build save/resume is available. Eleven fresh-process continuation scenarios and stock-startup restoration pass; broader firmware-state coverage remains unfinished. Saves require the exact executable and inputs. |
-| Ten-second reset | A cancellable ten-second hold that triggers the same process restart. Physical power/reset circuitry is not modelled by this gesture. |
+| Ten-second reset | A cancellable ten-second hold that triggers the same process restart. This gesture does not model the physical power/reset circuitry. |
 | RAM inspector | Reads internal RAM through QMP while paused. |
-| Joystick and six buttons | The original GPIO profile connects the five joystick contacts and button 1. The current mixed GPIO/ADC profile adds top-right Return (button 3); buttons 2 and 4–6 remain unavailable. |
+| Joystick and six buttons | The five joystick contacts and button 1 are GPIO inputs. The current profile also connects buttons 2–6 through their shared ADC input, each at the count measured on the device. |
 | Internal SD0 | The run configuration attaches a separate read-only copy of the captured 120 MiB image to the BR28 SD0 controller. Firmware mounts its content volumes. |
 | SD card bay | Stages read-only raw images and models card presence in the input lab. Guest insertion requires an emulated SD controller and removable block device. |
 | File browser | Lists local workspace files and run outputs. Guest filesystem access is pending. |
 | Audio | The DAC model writes guest PCM to an isolated local output per run. Browser sound playback is not implemented. |
 
-The joystick has five digital contacts: left, right, up, down and press. All UI
-buttons have pressed/released states, but five physical keypad buttons share
-an ADC input rather than independent GPIO bits. There are no analogue joystick
-axes or variable deflection values. Keyboard, pointer and touch controls are supported.
+The joystick has five digital contacts: left, right, up, down and press. There
+are no analog joystick axes or variable deflection values. All UI buttons have
+pressed and released states, but the five physical keypad buttons share one ADC
+input rather than having independent GPIO bits. Keyboard, pointer and touch
+controls are supported.
 
 The input lab is an original diagnostic screen generated by the server. It lets
-the controls be exercised while hardware models are being developed. Its
-working screen and buttons do not establish that stock firmware boots or
-receives those inputs. In emulator mode, an uninitialised display remains blank
+the controls be exercised while hardware models are being developed. A working
+input-lab screen and buttons do not establish that stock firmware boots or
+receives those inputs. In emulator mode, an uninitialized display stays blank
 and model failures remain visible in the diagnostics.
 
 ## Emulator interface
 
-The current framebuffer bridge exposes `/machine` property
+The current framebuffer bridge exposes the `/machine` property
 `harness-frame-rgb`: a 128×160 row-major RGB888 image encoded as hexadecimal.
 The browser can rotate the image for landscape viewing. Reading the property
 does not advance emulated time or modify guest state.
 
-A separate logical guest input interface uses a writable `harness-inputs` integer and
-a readable `harness-inputs-wired` boolean. Bits 0–4 represent up, down, left,
-right and press; bits 5–10 represent buttons 1–6. One means pressed. Every
-update supplies the complete contact state, including zero to release all
+A separate logical guest input interface uses a writable `harness-inputs`
+integer and a readable `harness-inputs-wired` boolean. Bits 0–4 represent up,
+down, left, right and press; bits 5–10 represent buttons 1–6. One means pressed.
+Every update supplies the complete contact state, including zero to release all
 contacts. The emulator should advertise the interface as wired only when it
 drives the inputs that firmware actually samples.
 
-The external input profile maps contact state to sampled GPIO or ADC properties.
-It holds the startup power input until a declared retirement
-threshold, then releases it automatically and enables controls. The actual
-release count is recorded. This is a diagnostic startup fixture, not a measured
-physical three-second hold. No firmware event or program-counter trigger is
-injected.
+The external input profile maps contact state to sampled GPIO or ADC
+properties. It holds the startup power input until a declared number of
+retired instructions, then releases it automatically and enables the controls.
+The actual release count is recorded. This is a diagnostic startup fixture, not
+a measured physical three-second hold. No firmware event or program-counter
+trigger is injected.
 
-The operator identifies the physical top-right button as Return. The mixed
-profile supplies PB9 ADC count **115** while held and **1023** on release; 115
-lies inside the firmware's Return interval. These are source-derived model
-inputs, not measured resistor-ladder counts or voltages. The server briefly
-pauses at a settled boundary to change an analog input, then resumes a previously
-running session. An already sampled conversion retains its latched value.
-Settings Back and the clock's Return behavior have been checked. The updated
-live session also passes clock-to-Music, Back, carousel navigation and return to
-the clock. The other analog buttons still need mappings and qualification.
+Buttons 2–6 share one resistor ladder on PB9. The current input profile
+(schema 3) supplies the count measured on the device while each button is held:
+**1** for top-middle (button 2), **108** for top-right Return (button 3),
+**245** for bottom-left (button 4), **373** for bottom-middle (button 5) and
+**492** for bottom-right (button 6). Released, the input reads **1023**. These
+counts come from one unit, sampled from ROM mode. What each button does in the
+stock UI, physical timing and tolerance across units are unverified. One ladder
+can report only one count, so holding two of these buttons together is
+rejected without changing the inputs already accepted. The older profile, which
+supplied a source-derived Return count of 115, remains supported.
+
+To change an analog input, the server briefly pauses at a settled boundary,
+then resumes a session that was running. A conversion that has already been
+sampled keeps its latched value. Live sessions have checked Settings Back, the
+clock's Return behavior, clock-to-Music, Back, carousel navigation and return
+to the clock. With the measured counts,
+the firmware's unchanged button scanner returns a distinct raw key code for
+each of the five buttons, and browser checks cover all five, including
+recording, replay and checkpoint restore.
 
 SD insertion uses QEMU's removable-media interface once the board exposes a
 compatible device. Uploaded raw images are read-only and limited to 64 MiB in
@@ -87,58 +103,64 @@ the internal SD0 image supplied in the emulator's run configuration.
 
 ## Current firmware checkpoint
 
-Unchanged firmware now mounts the captured SD0 content, passes the reached
-Bluetooth initialization path under explicit no-peer inputs and renders its
+Unchanged firmware mounts the captured SD0 content, passes the Bluetooth
+initialization path it reaches under explicit no-peer inputs, and renders its
 stock clock face. A display DMA byte-order profile corrects the scrambled
-palette; physical color fidelity remains unqualified. Centre-stick input
-exposed another CPU instruction, now implemented with 490 offline cases. A
-subsequent web session renders the menu after centre-stick input. After another
-signed-offset instruction fix, a walkthrough entered all ten main sections.
-Brightness-slider, stopwatch and countdown responses were observed; entry alone does
-not establish full feature behavior. The deployed build fixes the drained-ring
+palette; physical color fidelity remains unverified.
+
+Center-stick input exposed a further missing CPU instruction, now implemented
+with 490 offline cases; a web session then rendered the menu after center-stick
+input. After another signed-offset instruction fix, a walkthrough entered all
+ten main menu sections. Brightness-slider, stopwatch and countdown responses
+were observed; entering a section alone does not establish full feature
+behavior. The deployed build fixes the drained-ring
 DAC faults and passes WhiteNoise entry, Right and Back, plus selected
-OrchardSpin, LuckyToss and Mystic actions followed by Back. A bounded sweep
-enters all 15 game screens; 14 return to their matching selector. Pixel Racing
-stalls at START, and a later carousel state after Cube Crush also reproduces
-the P11 deadlock. A later Wheel of Luck action has the same verified failure.
-Full game behavior and long sessions remain unqualified. Browser sound playback and
-physical audio fidelity remain unfinished.
-See the [emulator results](emulator.md) for the validation and remaining limits.
+OrchardSpin, LuckyToss and Mystic actions followed by Back.
 
-Startup can still deadlock in an observed P11 reply/shared-lock race, which also
-recurred on the Date and time page. Even
-successful runs are too slow for comfortable interaction. Native CPU/device
-execution is the main bottleneck: fixed-workload headless and workbench tests
-show similar wall times, with about 1.1% of one host core used by the workbench.
-The latest local build includes device-deadline optimizations and same-build
-checkpoints. The Session tab shows modeled device time and wall time separately.
-Pause and choose Save checkpoint; Resume checkpoint creates a fresh process at
-that saved state. Tested stock startup restored in about 0.6 seconds. Saves must
-match the exact executable and input files, so an emulator fix needs new saves.
+A bounded sweep enters all 15 game screens, and 14 return to their matching
+selector. Pixel Racing stalls at START, and a later carousel state after Cube
+Crush stalls too; both reproduce the P11 deadlock, as does a later Wheel of Luck
+action. Full game behavior and long sessions remain unverified. Browser sound
+playback and physical audio fidelity remain unfinished. See the
+[emulator results](emulator.md) for the validation and remaining limits.
 
-A paused process needs Run before it can advance. A running label or increasing
-host session timer alone does not establish guest progress: inspect the model's
-stop reason when diagnosing a blank display. Restart starts the configured
-executable again; it does not rebuild or select a newer binary automatically.
+Startup can still deadlock in an observed P11 reply/shared-lock race, which
+also recurred on the Date and time page. Even successful runs are too slow for
+comfortable interaction. CPU and device execution in native QEMU is the main
+bottleneck, not the browser: fixed-workload headless and workbench tests show
+similar wall times, and the workbench uses about 1.1% of one host core. The
+latest local build includes device-deadline optimizations and same-build
+checkpoints.
+
+The Session tab shows modeled device time and wall time separately. To save a
+state, pause and choose Save checkpoint; Resume checkpoint creates a fresh
+process at that saved state. Tested stock startup restored in about 0.6
+seconds. Saves must match the exact executable and input files, so an emulator
+fix needs new saves.
+
+A paused process needs Run before it can advance. A running label or an
+increasing host session timer alone does not show guest progress; inspect the
+model's stop reason when diagnosing a blank display. Restart starts the
+configured executable again; it does not rebuild or select a newer binary
+automatically.
 
 ## Checks and limits
 
-Backend tests cover startup release, preserving unrelated
-GPIO bits, and rejection of unavailable controls. Earlier browser checks cover the
-eleven digital contacts, release on lost focus, input recording/replay,
-ten-second reset completion/cancellation, SD-image staging, and the real
-emulator's display, pause/run/restart and RAM reads. The synthetic native
-display fixture produced the same PPM bytes as its saved reference image.
+Backend tests cover startup release, preservation of unrelated GPIO bits and
+rejection of unavailable controls. Earlier browser checks cover the eleven
+digital contacts, release on lost focus, input recording/replay, ten-second
+reset completion/cancellation, SD-image staging, and the real emulator's
+display, pause/run/restart and RAM reads. The synthetic native display fixture
+produced the same PPM bytes as its saved reference image.
 
-A later real-browser check verified automatic startup release and Up accepted
-by the firmware scanner after a sixteen-second host hold. Separate native input
-replays also pass debounce and reach application handlers. This establishes
-selected GPIO input delivery; broader menu behavior remains under validation.
-The Return input adds tested delivery through the firmware's ADC
-scanner. Removable-card integration and the other analog buttons remain
-unfinished. Short host clicks can
-end before debounce at the current emulator speed.
+A later real-browser check verified automatic startup release and an Up press
+accepted by the firmware scanner after a sixteen-second host hold. Separate
+native input replays also pass debounce and reach application handlers. This
+establishes selected GPIO input delivery; broader menu behavior is still being
+validated. All five analog buttons are also delivered through the
+firmware's ADC scanner. Removable-card integration remains unfinished. At the current emulator speed, short host clicks can end before
+debounce accepts them.
 
-Input replay follows host wall-clock timing, and is not an
-instruction-deterministic replay system. The workbench is local software;
+Input replay follows host wall-clock timing; it is not an
+instruction-deterministic replay system. The workbench is local software, and
 these tests did not access the physical MiniToo.
