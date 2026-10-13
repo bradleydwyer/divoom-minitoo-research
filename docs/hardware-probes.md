@@ -1,11 +1,12 @@
 # Hardware measurements still wanted
 
-**The latest three CPU campaigns and two-pass SD0 acquisition are complete.**
-The corrected emulator matches 1,680 storage-path, 2,292 memory and 5,968
-supplement cases: 9,940 new measured cases in total, in addition to the earlier
-CPU/trim and 28-program edge results. The supplement includes the previously
-requested large-count logical-shift and pair-subtract carry discriminators.
-Normal startup after each batch's final manual restart was separately confirmed.
+**Four CPU campaigns and the two-pass SD0 acquisition are complete.**
+The corrected emulator matches 1,680 storage-path, 2,292 memory, 5,968
+supplement and 3,510 boundary cases: 13,450 measured cases, in addition to the
+earlier CPU/trim and 28-program edge results. CPU1/CPU2's scheduled branch and
+memory-shift boundaries are now resolved for the sampled operands. Reuse these
+captures rather than repeating their batches. Normal startup after each final
+manual restart was separately confirmed.
 
 The [SD0 acquisition](storage-backup.md) produced two matching complete 120 MiB
 logical images. Unchanged firmware now uses those assets to render the stock
@@ -54,7 +55,6 @@ screen. Controller/flex/PSRAM markings would also help.
 | Audio sampling ADC | Qualify effective sample rate, watermark timing, overrun, rearm and shared audio IRQ behavior | Stock code requests 44.1 kHz; ring units and ACK versus consumption ordering are source-derived. Physical sampling behavior remains unmeasured; prepare separately from retained internal-ADC observations |
 | Audio DAC | Qualify the source-derived DMA model | Functional ring playback and shared ADC/DAC interrupts pass native tests. Physical rate, gain/output, underflow and interrupt timing remain unmeasured |
 | Selected additional GPIO/backlight configuration | Check routing and PWM assumptions | Include only useful fields not already captured; distinguish ROM context from stock operation |
-| Register-count word memory shifts (CPU2) | Confirm E86E flags, full-count boundaries and signed offsets reached by centre-stick input | Generic correction passes 490 offline cases; consolidate physical discriminators with immediate-shift controls in the next qualified SRAM-only batch |
 | Bluetooth register access (RF0) | Establish inactive register retention before interpreting clocks or comparators | Latest parent-route and SFR-always-on stages passed, but both configuration witnesses failed retention; 32 dependent jobs skipped. Resolve ordering/ownership before another capture |
 | P11 reply and intercore exclusion (IPC1) | Determine why CPU0 can consume CPU1's synchronous reply in the emulator | Blocked on a bounded fixture owning both CPUs, source-32 handler, lock and mailboxes; no IPC1 measurement completed |
 | CPU arithmetic, carry, shifts and flags | Expand only where a specific ambiguity remains | New campaigns match after fixes, including distinguishing logical-shift/pair-subtract carry cases, rounding and saturation. Unsampled encodings, exceptions and timing remain open |

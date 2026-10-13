@@ -36,9 +36,12 @@ offline cases, including offsets, aliases, count boundaries, flags and refusal
 of an unsupported saturating form. The subsequent web session renders the menu
 after centre-stick input and
 records right-stick presses. This establishes that the earlier decoder stop
-was passed, not that all menu actions or input timing are correct. Those CPU
-cases establish source-qualified emulator behavior; a distinguishing physical
-batch remains queued.
+was passed, not that all menu actions or input timing are correct.
+
+A subsequent 3,510-case physical batch found 534 mismatches in memory-shift
+boundaries. Corrections to register-count width, signed immediate offsets and
+the immediate count-32 encoding bring all measured cases into agreement. The
+490 synthetic checks also pass under the corrected policy.
 
 A separate failure is still unresolved: CPU1 requests a P11 reply while holding
 a shared lock, then CPU0's interrupt handler clears that reply before CPU1
@@ -138,14 +141,15 @@ Raw saved device state remains private.
 
 ## CPU measurements and coverage
 
-Three new hardware campaigns have been integrated and replayed natively:
+Four hardware campaigns have been integrated and replayed natively:
 
 | Campaign | Measured cases | Main scope |
 | --- | ---: | --- |
 | Storage-path CPU | 1,680 | Selected E1DF/E19C/E1DE/E078 shifts, bitfields and related forms |
 | Memory CPU | 2,292 | Signed memory operations, address updates and selected aliases |
 | Consolidated supplement | 5,968 | Rounding/saturation, scalar and pair shifts, carry discriminators, stride/DSP memory forms, flags, bounded REP/parallel contexts and finite floating point |
-| **Total** | **9,940** | **All measured cases match native replay after corrections** |
+| CPU boundaries | 3,510 | Register/immediate word-memory shifts, signed offsets, aliases and signed/unsigned branch literals |
+| **Total** | **13,450** | **All measured cases match native replay after corrections** |
 
 These extend the earlier eleven-case CPU probe, ten-program CPU/trim set and
 28-program CPU-edge batch. Normal startup after each new batch's final manual

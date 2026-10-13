@@ -22,7 +22,7 @@ Results as of 13 October 2026 cover one physical MiniToo running stock firmware
 | Check application USB storage | LUN0 INQUIRY succeeds; READ CAPACITY(10) stalls on its first data read; no capacity, sector or backing-device mapping established; owner confirms no microSD was inserted and normal operation after reattachment |
 | Run a combined CPU/trim batch | All eleven jobs completed; ten CPU blocks match after three categories of emulator correction; normal startup confirmed after the whole batch |
 | Run a further CPU-edge batch | All 28 programs completed and match the corrected emulator in 28 whole blocks and 444 decoded fields; finite flag/TESTSET observations, with normal startup separately confirmed |
-| Add register-count memory shifts reached by menu input | Source-qualified E86E correction passes 490 offline cases; physical flags/count boundaries remain queued |
+| Add register-count memory shifts reached by menu input | 2,982 physical shift cases match after count/offset corrections; 528 branch controls also match |
 | Save and restore emulator state | Same-build save/resume is available in the local workbench; eleven fresh-process continuation scenarios cover CPU/peripherals, storage and audio. A 74-second stock-startup state restored in 0.60 seconds and continued; broader firmware-state coverage remains unfinished |
 | Investigate emulator speed | The optimized build is running in the local workbench. Three-run medians for 100 million startup instructions improved from 7.097 to 3.732 seconds (1.90× throughput). A clock-screen continuation improved from 4.969 to 3.709 seconds against the intermediate build (1.34×); these baselines differ. The final executable passes 439 exact device comparisons and expanded checkpoint, concurrency and debugger checks. Interactive execution remains slow; [measurements and limits](emulator.md#speed-and-resumable-state) |
 | Probe isolated Bluetooth registers | First 32-job batch completed, but all radio readbacks were zero. Follow-up RF0 witnesses failed retention even with the SFR-always-on setting retained; 32 dependent jobs were skipped in the latest batch. Timing and interrupt semantics remain unqualified |
@@ -146,6 +146,15 @@ separately confirmed normal startup after its final manual restart. The
 supplement broadens rounding, saturation, stride/DSP memory, carry and flag
 coverage, plus selected REP/parallel contexts and finite floating point. This
 does not qualify every encoding, exception, memory fault or timing rule.
+
+A fourth campaign adds **3,510 CPU boundary cases**, bringing these four
+campaigns to **13,450 measured cases**. Native replay initially found 534
+mismatches: register-count memory shifts use the low byte of the count,
+immediate siblings use signed offsets, and an immediate count encoded as zero
+means 32. All 3,510 cases now match after correction; the 528 branch-literal
+controls needed no implementation change. The owner confirmed normal startup
+after the final manual restart. The raw capture has a separate verified private
+backup. IPC and radio lanes were blocked and did not execute in this batch.
 
 The reviewed-root static decode census now has zero rejected sites, down from
 53; indirect targets and unreviewed paths remain outside that result. These
