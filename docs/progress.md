@@ -39,7 +39,9 @@ Results as of 13 October 2026 cover one physical MiniToo running stock firmware
 | Read PSRAM controller and clock configuration | ROM-context snapshot completed; controller enable fields clear and clock source NONE; subsequent normal startup reported; part, capacity and live application state unmeasured |
 | Run a RAM-only display attempt | Executed and returned to ROM, but timed out on the first byte; zero completed bytes confirmed and backlight not enabled |
 | Boot normally after the display attempt | Confirmed using the tested manual power-key restart |
-| Install modified firmware | Not attempted |
+| Audit menu/input source evidence offline | All 13 installed ranges matched; 25 instruction sites and all 65,536 ADC decoder counts checked. No hardware access or new physical input/IRQ qualification |
+| Rehearse firmware installation and restoration offline | In progress across ROM boot, writable virtual flash, USB recovery and fresh-process validation. An isolated reset prototype reaches USB setup before flash access; the full round trip has not passed. [Scope](emulator.md#install-and-restore-rehearsal) |
+| Install modified firmware on the device | Not attempted |
 | Restore a backup or recover a broken application | Not demonstrated |
 
 Offline verification checked both full file sizes/hashes, every original RAM result block, each chunk hash and all twelve ROM fingerprints after every call. Raw captures remain private. No firmware update, flash program/erase or status-register write has been sent. Mode-release frames change volatile protocol state.

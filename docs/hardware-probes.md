@@ -66,6 +66,27 @@ Installed firmware and the family SDK disagree on clock-divider encoding.
 Preserve the original instrument capture and correlate it with the visible
 screen. Controller/flex/PSRAM markings would also help.
 
+## Install and restore measurements
+
+The [offline install-and-restore work](emulator.md#install-and-restore-rehearsal)
+is collecting the specific hardware questions left by its source-derived models.
+The complete ROM, main-flash and SD0 acquisitions already exist; repeating them
+would not establish reset behavior or recovery. A future restore will need its
+own complete readback and boot verification.
+
+| Measurement | Distinguishing evidence needed | Preparation state |
+| --- | --- | --- |
+| Reset mapping and flash boot | Initial execution/reset state and a passive trace of flash commands, addresses and bus widths during normal cold boot | Observation setup and exact model questions are being prepared; supplied reset/readiness inputs are not physical measurements |
+| Application-independent recovery entry | A qualified reset-time BR28 handshake that reaches ROM without relying on a running application, followed by a bounded RAM round trip | Existing application-to-ROM entry does not establish this; board/accessory setup remains unqualified |
+| Flash part and protection inputs | Resolve the H/SH candidate suffix and read the source-qualified status/configuration fields under an owned interface contract | JEDEC `85 60 15` is known; exact variant and initial protection state remain open. No protection write is proposed |
+| USB recovery behavior | Reuse existing valid transfers; add only missing enumeration, control/reset or failure observations that distinguish controller policies | Passive packet capture and an internal controller fixture establish different facts; fixture ownership is not yet qualified |
+| State needed for restoration | Establish the loader's actual dependencies on chip identity, fuses, main-array configuration and separate storage | Backups do not justify synthetic identity inputs or a guessed writable partition map |
+| Reset or interruption during writing | Operation state, changed bytes and recovery through the independently established entry path | Later work on an owned disposable or otherwise qualified recoverable target; no persistent experiment is ready |
+
+These cases will be consolidated with IPC1 and the analog-key work only where
+their execution contexts and ownership contracts are compatible. No runnable
+install/recovery hardware batch is being claimed.
+
 ## Completed observations and remaining candidates
 
 | Measurement | Why it helps | Preparation state |

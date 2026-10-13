@@ -90,6 +90,33 @@ byte comparison and removes a ROM-image mismatch from the known uncertainties;
 it does not qualify the CPU or peripheral behavior around that code. See the
 [ROM capture evidence](progress.md#hardware-observations-for-emulation).
 
+## Install and restore rehearsal
+
+Work is now underway to test installing our firmware and restoring the captured
+original through the modeled hardware. The existing clock/menu workbench loads
+a decoded application with an explicit bootloader handoff. Its checkpoints save
+virtual machine state; they do not demonstrate rewriting firmware.
+
+The new work is split into four parts:
+
+| Part | Current state |
+| --- | --- |
+| ROM and flash boot chain | An isolated opt-in prototype starts at ROM byte zero with the raw flash capture and no predecoded application or synthetic handoff. It executes original reset, power and clock instructions, then stops at USB setup before any flash transaction. Reset mapping and supplied readiness inputs remain unmeasured. |
+| Writable virtual flash | Erase/program, busy/protection rules, disposable backing and durable state are being implemented and checked. The original captures remain immutable; combined native qualification is unfinished. |
+| USB recovery | A virtual host and controller/endpoint model are being developed to exercise the actual guest ROM transport. The existing disconnected USB profile does not provide this capability. |
+| Restore qualification | The target is a guest-driven install, a fresh boot, restoration of the original bytes, then another fresh stock boot with complete readback and independent guest witnesses. This complete sequence has not passed yet. |
+
+A separate offline source audit passed: all 13 installed firmware ranges matched,
+25 instruction sites were checked, and all 65,536 ADC decoder counts were tested
+against the preserved threshold logic. This adds source verification rather than
+physical measurements; live USB observation and ADC/interrupt acquisition remain
+unqualified.
+
+The [hardware measurement list](hardware-probes.md#install-and-restore-measurements)
+tracks reset/boot assumptions, recovery entry independent of a working
+application, flash identity/protection, and USB behavior that offline evidence
+does not settle. No firmware has been flashed or restored on the physical unit.
+
 ## Core timer clock correction
 
 An opt-in implementation now follows the core timer clock changes made during
