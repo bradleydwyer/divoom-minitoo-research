@@ -86,9 +86,9 @@ The final build passes the same 264 exact device comparisons and all eleven
 checkpoint continuation scenarios, plus a regression that rejects live checkpoint
 layout inspection until execution is paused.
 
-The latest build combines device-lock ownership, cheaper unchanged peripheral
+An earlier optimization pass combined device-lock ownership, cheaper unchanged peripheral
 reads, contiguous memory-map aliases, guarded direct MMIO dispatch and compiler
-profile optimization. It is now running in the local workbench. Three alternating
+profile optimization. Three alternating
 repetitions per build produced these median wall times:
 
 | Fixed 100-million-instruction workload | Earlier deployed build | Intermediate combined build | Final optimized build |
@@ -117,6 +117,30 @@ classification fix passes twenty fresh-process restores of that case with exact
 clock and device-state equality. This is separate from the unresolved P11
 firmware race described above.
 
+The next optimization pass retains cheaper timer arithmetic and immediate
+memory-map publication with fewer host lookups. Against its CPU-corrected
+baseline, a three-run clock-continuation comparison fell from 3.937 to 3.341
+seconds per 100 million instructions (15.15% less wall time); startup gains were
+smaller and variable. It also corrects an unconditional-loop shortcut that
+advanced QEMU's virtual clock without the corresponding retired instructions.
+
+The current local build adds a checkpoint pause/resume acknowledgement fix.
+Three alternating runs give medians of **3.617 seconds for startup** and
+**3.391 seconds for clock continuation** per 100 million instructions, about
+27.7 and 29.5 million instructions per second. A freshly trained compiler profile
+did not improve these workloads and was not selected. The instruction model
+and four-instruction multicore quantum remain unchanged.
+
+Checkpoint qualification now includes 400 rapid pause/resume boundaries and
+twenty repetitions each of repeat-context, single-core and lock-wakeup restores,
+preserving the exact next-CPU cursor and modeled clocks. The full 439-case
+device comparison also passes. Longer blocks for ordinary mapped-memory loads
+are being investigated separately; a synthetic gain is not yet a firmware
+speed result.
+
+A live-web test of this build restored the stock clock screen into a fresh
+process in 0.63 seconds with identical screen bytes, emulated time and button
+state, then resumed normally.
 
 The workbench separates **Emulated time** from **Wall time**. The former follows
 the virtual clock: currently 8 ns per aggregate retired instruction across both
