@@ -9,7 +9,7 @@ and does not access the physical MiniToo.
 repository. This public source tree does not include them yet.** The
 [published emulator instructions](emulator.md) still describe the earlier
 RAM-only fixtures. This page records the workbench's scope and integration
-boundary as of 13 October 2026.
+boundary as of 14 October 2026.
 
 In the workbench, unchanged stock firmware reaches its clock face and menus.
 Interaction is slow, an intermittent deadlock remains, and browser sound
@@ -35,6 +35,8 @@ WebAssembly. The workbench does not automatically pick up a new emulator build.
 | Run limit | Interactive sessions can run without an instruction cutoff; fault checks remain active. Removing the cutoff does not resolve a deadlock. |
 | Checkpoints | Same-build save/resume is available. Eleven fresh-process continuation scenarios and stock-startup restoration pass; broader firmware-state coverage remains unfinished. Saves require the exact executable and inputs. |
 | Ten-second reset | A cancellable ten-second hold that triggers the same process restart. This gesture does not model the physical power/reset circuitry. |
+| Virtual firmware | Four browser controls install the robot into a private flash copy, cold boot it for button testing, restore every original byte, then boot the stock clock. The same native ROM/USB/SPI checks run behind each step. |
+| CPU fault display | An instruction fault shows a blue MiniToo diagnostic with an unhappy pixel robot, PC and reported opcode. The last guest screen stays separately viewable and downloadable. Pauses and budget stops are not shown as CPU crashes. |
 | RAM inspector | Reads internal RAM through QMP while paused. |
 | Joystick and six buttons | The five joystick contacts and button 1 are GPIO inputs. The current profile also connects buttons 2–6 through their shared ADC input, each at the count measured on the device. |
 | Internal SD0 | The run configuration attaches a separate read-only copy of the captured 120 MiB image to the BR28 SD0 controller. Firmware mounts its content volumes. |
@@ -53,6 +55,26 @@ the controls be exercised while hardware models are being developed. A working
 input-lab screen and buttons do not establish that stock firmware boots or
 receives those inputs. In emulator mode, an uninitialized display stays blank
 and model failures remain visible in the diagnostics.
+
+## Testing firmware installation and restoration
+
+A separately configured local workbench now exposes **Install robot**, **Cold
+boot robot**, **Restore original**, and **Boot stock clock**. Installation and
+restoration use the original ROM's virtual USB path and a bounded guest SPI
+writer. Each rehearsal starts with a fresh private flash store; the captured
+original stays unchanged. The robot opens in a live session for the five small
+buttons. Restoration stops that session before writing, then verifies all
+2,097,152 original bytes. The final clock frame comes from a fresh stock boot.
+
+The final artifact checker independently reconstructs the sequence. Checkpoint
+resume and host image replacement do not qualify it. Stock startup can still
+stall: the UI shows that failure, retains the attempt and offers a fresh boot
+only after confirming the original array is still restored. A restore after a
+failed robot check is shown as recovery, rather than a completed four-step test.
+
+This is entirely virtual. Physical recovery entry, flash protection and actual
+installation remain unproven. The panel, trusted input configuration and raw run
+records remain in the private research checkout.
 
 ## Emulator interface
 

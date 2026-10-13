@@ -60,3 +60,6 @@ research repository. The
 [install/restore rehearsal](emulator.md#install-and-restore-rehearsal) describes
 the original small entry fixture and this complete robot sequence. Runtime
 evidence remains in local ignored artifacts; it is not an off-machine backup.
+
+The [browser workbench](workbench.md#testing-firmware-installation-and-restoration)
+now exposes the four steps, including a live robot session for button testing.
