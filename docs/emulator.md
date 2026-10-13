@@ -56,6 +56,47 @@ image-backed run, alongside synthetic microphone capture. PCM consumption does
 not establish faithful sound reproduction or resolve decoder error code 33.
 The sink captures samples before modeled gain; browser audio is unfinished.
 
+## Core timer clock correction
+
+An opt-in implementation now follows the core timer clock changes made during
+stock startup. It derives both TTMR rates from the programmed selectors and
+dividers with an explicit **nominal 192 MHz PLL input**, preserving the early
+24 MHz stage and switching to 192 MHz at the later configuration. It does not
+model PLL synthesis or physically measure that frequency.
+
+The firmware changes the core-0 timer period from 240,000 to 1,920,000 ticks.
+Both correspond to 10 ms at their respective nominal rates. Keeping the timer
+fixed at 24 MHz had stretched the later OS tick to **80 modeled ms**; following
+the clock configuration restores **10 modeled ms**. The four-instruction
+multicore quantum and the **8 ns charge per aggregate retired instruction** are
+unchanged. This is a timer-model correction, not an eightfold improvement in
+host execution speed or a calibration of physical startup time.
+
+Fixed-clock mode remains the default machine option. The following mode
+synchronizes at the old rate before a clock write and refuses to enable a timer
+with an unknown clock. Effective rate changes are refused while either timer
+is enabled; disabled transitions preserve counter phase and pending state. Its immutable
+clock mode and nominal PLL input are included in checkpoint compatibility;
+older saved states still require their original executable and configuration.
+
+Both the development build and production-flags build pass **36 focused checks**.
+These cover 15,360 integer clock-decoder comparisons, fixed-mode report equality,
+both-core transition guards, phase and expiry boundaries, IRQ/idle behavior,
+fresh-process continuation, and invalid configuration/checkpoint rejection.
+An isolated development-build run of unchanged stock firmware completes
+3,847,910,318 aggregate instructions without fault. It reaches the clock face; a subsequent centre-stick press held
+for 10 million instructions, followed by 100 million after release, reaches the
+**Music menu** without fault. The hold spans about 179.5 modeled ms including
+sleep advancement; it is not a measured physical input duration.
+
+Production also passes all 439 existing device/media comparisons in unchanged
+fixed-clock mode. The local workbench now enables the corrected mode; its
+previous session was saved with its original executable. The corrected production
+web run reached the clock face. Its checkpoint confirmed both timers at
+192 MHz; a fresh-process restore took 0.622 wall seconds and preserved exact
+screen bytes, modeled time and button state. These successful runs do not establish that the separate intermittent P11 race
+or every menu interaction is resolved.
+
 ## Speed and resumable state
 
 Interactive speed is the current priority. Three-repeat fixed-workload tests
@@ -124,9 +165,9 @@ seconds per 100 million instructions (15.15% less wall time); startup gains were
 smaller and variable. It also corrects an unconditional-loop shortcut that
 advanced QEMU's virtual clock without the corresponding retired instructions.
 
-The current local build adds a checkpoint pause/resume acknowledgement fix.
-Three alternating runs give medians of **3.617 seconds for startup** and
-**3.391 seconds for clock continuation** per 100 million instructions, about
+The build preceding this core-timer correction adds a checkpoint pause/resume
+acknowledgement fix. Three alternating runs give medians of **3.617 seconds for
+startup** and **3.391 seconds for clock continuation** per 100 million instructions, about
 27.7 and 29.5 million instructions per second. A freshly trained compiler profile
 did not improve these workloads and was not selected. The instruction model
 and four-instruction multicore quantum remain unchanged.
@@ -137,9 +178,12 @@ preserving the exact next-CPU cursor and modeled clocks. The full 439-case
 device comparison also passes. Subsequent mapped-memory load batching and direct
 MMIO-write experiments did not establish a useful general gain. A read-lock
 optimization improved one startup pilot but slowed the production clock workload
-by 8.2%, so it was also kept out of the default build. The next experiment targets
-translation-block overhead around qualified status reads. Execution remains
-below hardware speed.
+by 8.2%, so it was also kept out of the default build. A two-instruction
+status-read batching prototype passed focused correctness checks but made the
+startup workload 8.79% slower; clock continuation was 0.75% slower with mixed
+pairs. It is parked. Those measurements used matched experimental compiler
+settings, not the deployed optimized build. Execution remains below hardware
+speed.
 
 A live-web test of this build restored the stock clock screen into a fresh
 process in 0.63 seconds with identical screen bytes, emulated time and button
@@ -215,7 +259,7 @@ count actual retired instructions per host wall time independently of that model
 | Area | Implemented scope and main limits |
 | --- | --- |
 | CPU and memory | Two PI32v2 main cores, internal RAM, reference ROM, MMU aliases, functional interrupts and hardware locks; some reset, fault and concurrency rules remain assumed |
-| Timers and clocks | Reached timer/capture paths with explicitly supplied clock inputs and functional timing; no physical timing qualification |
+| Timers and clocks | Reached timer/capture paths with explicit clock inputs; opt-in core timers follow supported selector/divider transitions from a nominal PLL input. Unsupported active rate changes are refused; no physical timing qualification |
 | Storage | Captured program flash and read-only SD0 image, guest filesystem mounts and content reads; removable-card workbench integration remains unfinished |
 | USB0 | Explicit disconnected-peer detection profile; no packet transfer or general USB protocol model |
 | RTC | Bounded configuration and static time snapshot with delayed completion; no advancing calendar or alarm |
@@ -251,8 +295,9 @@ These are operator observations, not measured timing.
 The workbench uses an explicit startup power hold and releases it at a declared
 instruction-retirement threshold. That threshold is a diagnostic fixture, not
 three seconds of physical time. Selected joystick inputs pass the firmware
-scanner and debounce, but an earlier mode-change request was refused by the
-application state; input delivery alone does not establish a working menu.
+scanner and debounce. An earlier mode-change request was refused by the
+application state; the corrected core-timer smoke above reaches the Music menu.
+Broader menu behavior and physical input timing remain unqualified.
 
 Remaining work includes reliable clock/menu interaction, native performance,
 broader checkpoint coverage, decoder completion, analog buttons, browser sound and

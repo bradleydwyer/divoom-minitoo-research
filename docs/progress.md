@@ -17,6 +17,7 @@ Results as of 13 October 2026 cover one physical MiniToo running stock firmware
 | Decompile and analyse captured firmware | Image inventoried, every application byte checked against the vendor listing, and 1,201 reachable procedures exported through REA; [findings and limits](firmware-analysis.md) |
 | Build an initial offline emulator | Published RAM-only fixtures run small PI32v2 programs; [scope and offline checks](emulator.md) |
 | Execute unchanged stock startup offline | Both cores and scheduler run; program-flash and captured SD0 filesystems mount. Explicit no-peer Bluetooth models let unchanged firmware reach its clock face; the corrected menu-transition instruction allows a menu to render after centre-stick input. Startup remains intermittent because an observed P11 intercore reply race can deadlock the emulator; full interactive UI qualification remains unfinished |
+| Follow core-timer clock transitions | Implemented opt-in nominal clock model follows the firmware’s 24→192 MHz transition, correcting the later OS tick from 80 to 10 modeled ms. Both builds pass 36 focused checks; an isolated stock boot and centre-stick transition reach the Music menu without fault. The local workbench uses the corrected mode; [scope and evidence](emulator.md#core-timer-clock-correction) |
 | Render through the emulated display | Stock clock graphics render; an explicit buffer-DMA byte-order profile corrects the scrambled palette, and one replay completes 272 transfers. The earlier HOT-heart was a missing-content fallback. Exact physical colors/orientation and bus timing remain unqualified |
 | Check a fixed RAM CPU probe against the emulator | All eleven cases and the complete 512-byte result matched |
 | Check application USB storage | LUN0 INQUIRY succeeds; READ CAPACITY(10) stalls on its first data read; no capacity, sector or backing-device mapping established; owner confirms no microSD was inserted and normal operation after reattachment |
@@ -50,6 +51,29 @@ press as an animated Divoom logo on black, further animations and sounds, then
 the default clock face. HOT-heart was absent. Battery animation was mainly
 seen after a long reset, not the latest ordinary power-off/on cycle. These
 operator observations are separate from emulator results and measured timing.
+
+## Core timer clock correction
+
+An opt-in emulator change now derives both core timer rates from the firmware's
+clock selectors and dividers, using an explicit nominal 192 MHz PLL input. It
+preserves the early 24 MHz stage and follows the later 192 MHz configuration.
+The previous fixed 24 MHz model made the later OS tick last 80 modeled ms;
+the corrected configuration gives 10 modeled ms.
+
+Development and production-flags builds pass 36 focused checks, including clock
+decoding, guarded transitions, IRQ/idle behavior and exact checkpoint restore.
+An isolated development-build run of unchanged firmware completes 3.848 billion
+instructions; a further 110-million-instruction centre-stick smoke reaches the
+Music menu without fault. Production also passes all 439 existing device/media
+comparisons in fixed mode. The local workbench has been restarted with the
+corrected clock mode and has reached the clock face. A fresh-process checkpoint
+restore preserved its screen, modeled time and button state; the previous
+session remains saved with its original executable.
+
+This changes timer behavior, while the emulator still charges 8 ns per aggregate
+retired instruction plus advancement during sleep. It is not an eightfold host
+speed improvement or physical clock calibration. The separate CPU timing
+campaign below still needs an absolute reference.
 
 ## Latest CPU timing results
 
