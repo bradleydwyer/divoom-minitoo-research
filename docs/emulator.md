@@ -131,9 +131,11 @@ code. Physical mapping, aliases and hidden areas are unverified; see the
 
 ## Install and restore rehearsal
 
-The emulator completes a bounded installation and restoration through the
-modeled hardware. This is separate from the clock/menu workbench, which loads a
-decoded application through an explicit bootloader handoff. Workbench
+The emulator installs our 41 KB robot program, cold boots it through the original
+ROM and loader, restores the complete original flash, and boots stock firmware
+to its clock. Both H and SH candidate flash profiles pass. This is separate from
+the clock/menu workbench, which loads a decoded application through an explicit
+bootloader handoff. Workbench
 checkpoints save virtual machine state; they do not demonstrate rewriting
 firmware.
 
@@ -145,14 +147,17 @@ The rehearsal instead starts every process at original ROM byte zero:
 | Writable virtual flash | Twenty cases cover guest SPI erase/program, busy/protection/framing rules, complete readback and persistence across fresh processes for both candidate flash profiles. Changes go to private backing storage; original captures stay unchanged. Writable profiles refuse checkpoint save/load, so a VM snapshot cannot rewind durable flash. |
 | USB recovery | Modeled external digital samples make original ROM select recovery before it runs the loader or application. ROM handles the virtual USB uploads, readbacks and call to the SRAM SPI writer. Reply guards withhold further commands after a mismatched code, request, data or status. Thirty-three separate USB/writer cases include interrupted writes and refusal of corrupted uploads. |
 | Restore sequence | Four fresh processes share one durable store. They install a minimal custom entry program through ROM USB and guest SPI; boot it through ROM and loader and check its result; restore through the same recovery transport; and boot stock firmware through its BSS/copy startup loops. The complete restored 2 MiB array equals the original. The custom package changes 82 bytes in one 4 KiB sector. |
+| Robot install and restore | Twenty-four fresh processes per flash profile share one durable store. Eleven sectors install through ROM USB and the bounded SRAM SPI writer. A fresh cold boot renders our robot and all five press/release pairs match an independent pixel check. Eleven sectors restore through ROM recovery, then a fresh stock boot mounts SD0 and draws its clock. The entire restored 2 MiB array equals the original. |
 
 The combined build also matches all 439 existing device-regression cases,
 including complete machine reports, return codes, audio and frame hashes. An
 independent artifact checker reconstructs every stage and ignores imported pass
 flags. Neither checkpoint reload nor host-side image replacement counts as
-installation evidence. The custom program is a small entry program, not a
-replacement UI. The stock boot check stops before the scheduler and UI are
-verified.
+installation evidence. The earlier minimal-entry fixture still stops stock boot
+before the scheduler and UI. The robot sequence additionally checks the stock
+clock face and guest SD0 mount/resource logs. Its final stock boot uses the
+explicit exact-payload P11 HLE and static RTC profile. Installer, robot and
+restore execution keep P11 HLE off. See [the robot milestone](robot-splash.md).
 
 The rehearsal depends on modeled inputs: explicit reset/readiness, clock and
 cache fixtures, a synthetic eFuse image compatible with the firmware, and an

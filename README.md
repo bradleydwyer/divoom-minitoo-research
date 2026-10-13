@@ -17,13 +17,15 @@ The MiniToo uses a Jieli BR28 chip with two PI32v2 CPU cores. All device results
 
 A little orange robot, drawn by our own code running in the emulator. The five
 lights below it respond to the five small buttons. The 41 KB program has its own
-startup and display code and uses no stock firmware or ROM code. It runs from
-RAM and has not been tried on the physical MiniToo yet.
+startup and display code, which calls no stock firmware or ROM services. It runs
+from RAM or virtual flash. It now boots through the original ROM and loader, and
+restoring the original flash brings back the stock clock. Both candidate flash
+profiles pass. It has not been tried on the physical MiniToo yet.
 [What runs and what remains](docs/robot-splash.md).
 
 ## Where things stand
 
-As of **13 October 2026**.
+As of **14 October 2026**.
 
 ### On the device
 
@@ -64,7 +66,7 @@ As of **13 October 2026**.
     <tr><td width="28%"><a href="docs/emulator.md#stock-firmware-emulation">Emulate the display</a></td><td><strong>Partial.</strong> Stock clock graphics render, with the scrambled palette fixed. Exact physical colors, orientation and bus timing are unverified.</td></tr>
     <tr><td width="28%"><a href="docs/workbench.md">Use the emulator from a browser</a></td><td><strong>Partial.</strong> Live screen, all five buttons, recording and replay, and saved checkpoints work. Confirming what each button does in stock firmware, removable-card support and browser audio are unfinished. Sources are not yet published here.</td></tr>
     <tr><td width="28%"><a href="docs/robot-splash.md">Run our own display and button program</a></td><td><strong>Done in the emulator.</strong> The robot program's pixels and button responses match an independent check. It has not run on the device.</td></tr>
-    <tr><td width="28%"><a href="docs/emulator.md#install-and-restore-rehearsal">Rehearse install and restore</a></td><td><strong>Done offline.</strong> Through the original ROM's USB path, the emulator installs a minimal custom program, boots it, restores the complete original flash and boots stock firmware again. Reset, chip identity and cold-start inputs are modeled, not measured; physical restoration is unproven.</td></tr>
+    <tr><td width="28%"><a href="docs/emulator.md#install-and-restore-rehearsal">Rehearse install and restore</a></td><td><strong>Done offline with the robot.</strong> Through the original ROM's USB path, the emulator installs our display/button program, cold boots it, restores the complete original flash and boots stock firmware to its clock. Both candidate flash profiles pass. Reset, chip identity and cold-start inputs are modeled; physical restoration is unproven.</td></tr>
     <tr><td width="28%"><a href="docs/firmware-analysis.md">Decompile and analyze the firmware</a></td><td><strong>First pass done.</strong> 1,201 reachable procedures were exported with pseudocode, and every application byte was checked against the vendor listing. Full behavioral reverse engineering remains.</td></tr>
   </tbody>
 </table>
