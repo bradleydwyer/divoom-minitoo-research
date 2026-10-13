@@ -39,12 +39,13 @@ shared-lock ownership excludes delivery on the peer core, or whether routing
 or acknowledgement differs. It needs a working positive interrupt control and
 bounded ownership/restoration of both cores. No runnable IPC1 payload is ready.
 
-The operator has identified the physical top-right key as Return. Its emulator
-mapping uses a source-derived ADC count, not a measured sample. A useful future
-input campaign would capture all five analog keys separately, including released
-baselines, stable ranges and the firmware's key result. Prefer qualified
-read-only observation in the normal application; entering ROM loses that context.
-This mapping campaign also needs preparation before any operator command.
+An isolated-ROM PB9 fixture has now measured all five operator-labelled keys:
+top-middle 0–1, top-right 108, bottom-left 244–245, bottom-middle 373 and
+bottom-right 491–492. Baseline and every release are 1023. All 352 samples and
+saved protocol/native results were revalidated offline. The earlier attempt
+refused admission before sampling or peripheral writes. Reuse these measured
+bands; a remaining normal-application observation must establish stock scanner,
+remapped-event, debounce and UI behavior. ROM entry loses that application context.
 
 The Settings memory-add and subsequent packed memory AND corrections are
 qualified offline from preserved vendor evidence and focused native tests;
@@ -69,7 +70,7 @@ screen. Controller/flex/PSRAM markings would also help.
 ## Install and restore measurements
 
 The [offline install-and-restore work](emulator.md#install-and-restore-rehearsal)
-has collated the specific hardware questions left by its source-derived models,
+has collated 52 lane questions into 28 groups covering its source-derived models,
 retaining each case's ownership, prerequisites, bounds, stopping and cleanup.
 The complete ROM, main-flash and SD0 acquisitions already exist; repeating them
 would not establish reset behavior or recovery. A future restore will need its
@@ -78,10 +79,12 @@ own complete readback and boot verification.
 | Measurement | Distinguishing evidence needed | Preparation state |
 | --- | --- | --- |
 | Reset mapping and flash boot | Initial execution/reset state and a passive trace of flash commands, addresses and bus widths during normal cold boot | Observation setup and exact model questions are being prepared; supplied reset/readiness inputs are not physical measurements |
+| Boot DMA, cipher, clocks and SFC | Timer/capture routing, SPI DMA/PERIENC/CRC ordering, cipher block boundaries, serial aliases and cache visibility | Native ROM/loader boots exercise the functional model; exact timing and physical mapping need passive evidence or an audited finite SRAM observer |
 | Application-independent recovery entry | A qualified reset-time BR28 handshake that reaches ROM without relying on a running application, followed by a bounded RAM round trip | Existing application-to-ROM entry does not establish this; board/accessory setup remains unqualified |
 | Flash part and protection inputs | Resolve the H/SH candidate suffix and read the source-qualified status/configuration fields under an owned interface contract | JEDEC `85 60 15` is known; exact variant and initial protection state remain open. No protection write is proposed |
 | USB recovery behavior | Reuse existing valid transfers; add only missing enumeration, control/reset or failure observations that distinguish controller policies | Passive packet capture and an internal controller fixture establish different facts; fixture ownership is not yet qualified |
 | State needed for restoration | Establish the loader's actual dependencies on chip identity, fuses, main-array configuration and separate storage | Backups do not justify synthetic identity inputs or a guessed writable partition map |
+| Stock startup and loader fallback | Observe the actual P11 producer and startup handshake; distinguish corruption rejection and fallback | The rehearsal reaches original stock BSS/copy startup. Later P11/UI behavior and corruption experiments remain separately gated |
 | Reset or interruption during writing | Operation state, changed bytes and recovery through the independently established entry path | Later work on an owned disposable or otherwise qualified recoverable target; no persistent experiment is ready |
 
 Malformed flash frames, malformed USB commands and extended controller modes
@@ -104,7 +107,7 @@ install/recovery hardware batch is being claimed.
 | Audio sampling ADC | Qualify effective sample rate, watermark timing, overrun, rearm and shared audio IRQ behavior | Stock code requests 44.1 kHz; ring units and ACK versus consumption ordering are source-derived. Physical sampling behavior remains unmeasured; prepare separately from retained internal-ADC observations |
 | Audio DAC | Qualify the source-derived DMA model | Functional ring playback and shared ADC/DAC interrupts pass native tests. Physical rate, gain/output, underflow and interrupt timing remain unmeasured |
 | Selected additional GPIO/backlight configuration | Check routing and PWM assumptions | Include only useful fields not already captured; distinguish ROM context from stock operation |
-| Five analog keypad buttons | Measure each physical key's ADC band and released state | Top-right Return is operator-identified and works with a source-derived emulator count. Physical counts remain unmeasured; normal-application observation or an owned ADC fixture is not yet qualified |
+| Five analog keypad buttons | Correlate measured bands with the live stock scanner, remapped events and UI | Five bands and release 1023 are now measured in an isolated ROM fixture. Scanner/UI correlation, timing, cross-unit tolerance and simultaneous keys remain open; final restart confirmation is pending |
 | Bluetooth register access (RF0) | Establish inactive register retention before interpreting clocks or comparators | Latest parent-route and SFR-always-on stages passed, but both configuration witnesses failed retention; 32 dependent jobs skipped. Resolve ordering/ownership before another capture |
 | P11 reply and intercore exclusion (IPC1) | Determine why CPU0 can consume CPU1's synchronous reply in the emulator | Blocked on a bounded fixture owning both CPUs, source-32 handler, lock and mailboxes; no IPC1 measurement completed |
 | CPU arithmetic, carry, shifts and flags | Expand only where a specific ambiguity remains | New campaigns match after fixes, including distinguishing logical-shift/pair-subtract carry cases, rounding and saturation. Unsampled encodings, exceptions and timing remain open |

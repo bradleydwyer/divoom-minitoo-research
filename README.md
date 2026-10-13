@@ -35,7 +35,7 @@ Progress as of **13 October 2026**, covering one physical MiniToo and offline em
     <tr><td width="28%"><a href="docs/firmware-analysis.md">Decompile and analyse the captured firmware</a></td><td><strong>Analysis pass completed.</strong> REA exported 1,201 reachable procedures, and every application byte was checked against the vendor listing. Complete behavioural reverse engineering remains unfinished.</td></tr>
     <tr><td width="28%"><a href="docs/rom-mode.md">Leave idle ROM and boot normally</a></td><td><strong>Succeeded.</strong> The tested power-button procedure returned the device to stock firmware, including after the display attempt below.</td></tr>
     <tr><td width="28%">Show something using a RAM display program</td><td><strong>Attempted, unsuccessful.</strong> The program ran and returned to ROM, but timed out on the first byte. Zero completed bytes were confirmed; the backlight was not enabled.</td></tr>
-    <tr><td width="28%"><a href="docs/emulator.md#install-and-restore-rehearsal">Rehearse firmware installation and restoration offline</a></td><td><strong>In progress.</strong> A combined emulator passes guest flash erase/program/persistence and original-ROM USB fixtures. A guest-driven flash round trip restores the complete original image. Genuine cold boot and USB-driven installation/restoration still need integration.</td></tr>
+    <tr><td width="28%"><a href="docs/emulator.md#install-and-restore-rehearsal">Rehearse firmware installation and restoration offline</a></td><td><strong>Bounded sequence passes.</strong> Original ROM USB and a guest SPI writer install a minimal custom entry, a fresh ROM/loader boot verifies its witness, recovery restores the complete original array, and another fresh boot executes stock startup. Reset, identity and cold-entry inputs remain modeled; physical restoration is unproven.</td></tr>
     <tr><td width="28%">Install modified firmware on the device, then restore the original</td><td><strong>Not attempted.</strong> Installation, recovery from broken firmware and restoration remain unproven.</td></tr>
   </tbody>
 </table>
@@ -48,7 +48,7 @@ Nothing has been flashed. A readable backup does not establish that we can resto
 2. Resolve the observed P11 intercore reply race and qualify remaining CPU/peripheral rules through the [hardware backlog](docs/hardware-probes.md). The latest radio batch did not establish register liveness; its dependent tests were skipped.
 3. Diagnose the display peripheral setup and get a visible RAM-only demo working.
 4. Fill the remaining gaps in command handling, display/audio, storage and firmware behaviour.
-5. Build an offline install-and-restore rehearsal through ROM boot, writable flash and virtual USB; collate the remaining [hardware measurements](docs/hardware-probes.md#install-and-restore-measurements) and establish independent recovery before making a persistent device change.
+5. Qualify the offline install-and-restore model's remaining [hardware assumptions](docs/hardware-probes.md#install-and-restore-measurements) and establish physical independent recovery before making a persistent device change.
 6. Once those paths are established, try a small UI character change, then restore the original and verify normal boot and the restored bytes.
 
 ## Leaving ROM mode

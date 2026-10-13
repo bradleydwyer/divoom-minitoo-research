@@ -52,8 +52,10 @@ starts. Other visits establish only the entered screen, not complete feature
 operation. A Settings failure exposed a signed-offset memory-add instruction
 missing from the inherited decoder. Its correction passes 132 focused offline
 cases and allowed the walkthrough to continue. The top-right Return
-input also works from Settings and at the clock; its ADC count is source-derived,
-not a physical measurement.
+input also works from Settings and at the clock. That walkthrough used a
+source-derived count; a later isolated-ROM capture measured all five ADC bands
+([observations](progress.md#hardware-observations-for-emulation)). It did not
+observe the stock scanner or UI during sampling.
 
 A separate failure is still unresolved: CPU1 requests a P11 reply while holding
 a shared lock, then CPU0's interrupt handler clears that reply before CPU1
@@ -92,31 +94,39 @@ it does not qualify the CPU or peripheral behavior around that code. See the
 
 ## Install and restore rehearsal
 
-Work is now underway to test installing our firmware and restoring the captured
-original through the modeled hardware. The existing clock/menu workbench loads
+The research emulator now completes a bounded installation and restoration
+through the modeled hardware. The existing clock/menu workbench loads
 a decoded application with an explicit bootloader handoff. Its checkpoints save
 virtual machine state; they do not demonstrate rewriting firmware.
 
-The first implementations are now combined and checked together:
+The separate native rehearsal starts every process at original ROM byte zero:
 
 | Part | Current state |
 | --- | --- |
-| ROM and flash boot chain | Opt-in reset mode starts at ROM byte zero with raw flash and no predecoded application or synthetic handoff. Its 24 reset/admission checks pass; the qualified path stops at USB arbitration before flash access. Further boot integration is underway. Reset mapping, readiness and timer inputs remain assumptions. |
+| ROM and flash boot chain | Original ROM reads raw flash through SPI DMA, PERIENC and CRC, decompresses the vendor SRAM loader, and reaches the application through guest-configured SFC. No decoded kernel or host application handoff is supplied. Thirteen native boot/recovery cases pass. |
 | Writable virtual flash | Twenty native cases cover guest SPI erase/program, busy/protection/framing rules, complete readback and persistence across fresh processes for both candidate flash profiles. Mutations use private backing; original captures remain immutable. Writable profiles refuse checkpoint save/load so a VM snapshot cannot rewind durable flash. |
-| USB recovery | Fifteen native fixtures exercise a private packet host and controller using original ROM instructions. A bounded RAM upload/readback/call/result sequence validates six status replies; a separate fixture covers control enumeration and IRQ29. These use explicit service entry, and have not established cold recovery entry or a USB flash updater. |
-| Restore qualification | A SRAM guest changes one private flash sector, restores its original bytes and verifies the complete 2 MiB image across fresh processes. This is a data fixture. Bootable custom firmware, genuine ROM/loader boots and restoration through ROM USB remain unfinished; the runner explicitly reports end-to-end incomplete. |
+| USB recovery | Modeled external digital samples cause original ROM to select recovery before executing the loader or application. ROM handles the virtual USB uploads, readbacks and call to the SRAM SPI writer. Reply guards withhold subsequent commands on mismatched code, request, data or status. Thirty-three separate USB/writer cases include interrupted writes and corrupted-upload refusals. |
+| Restore qualification | Four fresh processes share one durable store: install a minimal custom entry through ROM USB and guest SPI; boot it through ROM/loader and verify its witness; restore through the same recovery transport; boot stock through its BSS/copy startup loops. The complete 2 MiB restored array equals the original. The custom package changes 82 bytes in one 4 KiB sector. |
 
 The combined build also matches all 439 existing device-regression cases,
 including complete machine reports, return codes, audio and frame hashes.
-The complete target remains a guest-driven installation, a fresh custom boot,
-ROM USB restoration and another fresh stock boot with independent witnesses.
-Neither checkpoint reload nor replacing a host image satisfies that sequence.
+An independent artifact checker reconstructs every stage and ignores imported
+pass flags. Neither checkpoint reload nor a host image replacement supplies
+installation evidence. The custom witness is a small entry program, not a
+replacement UI, and the stock witness stops before scheduler/UI qualification.
+
+These results use explicit reset/readiness, clock, cache, image-compatible
+synthetic eFuse and zero-UID fixtures. Cold recovery supplies 16 modeled
+D-minus samples for the ROM's signature logic; this is not a measured or
+qualified electrical trigger. Exact flash variant/protection, physical
+independent entry and interruption durability remain open. Whole-image host
+checks are required: guest entry alone does not prove application CRC enforcement.
 
 A separate offline source audit passed: all 13 installed firmware ranges matched,
 25 instruction sites were checked, and all 65,536 ADC decoder counts were tested
 against the preserved threshold logic. This adds source verification rather than
-physical measurements; live USB observation and ADC/interrupt acquisition remain
-unqualified.
+physical measurements; interrupt and normal-application observation remain
+separate qualification work.
 
 The [hardware measurement list](hardware-probes.md#install-and-restore-measurements)
 tracks reset/boot assumptions, recovery entry independent of a working
@@ -337,7 +347,7 @@ count actual retired instructions per host wall time independently of that model
 | CPU and memory | Two PI32v2 main cores, internal RAM, reference ROM, MMU aliases, functional interrupts and hardware locks; some reset, fault and concurrency rules remain assumed |
 | Timers and clocks | Reached timer/capture paths with explicit clock inputs; opt-in core timers follow supported selector/divider transitions from a nominal PLL input. Unsupported active rate changes are refused; no physical timing qualification |
 | Storage | Captured program flash and read-only SD0 image, guest filesystem mounts and content reads; removable-card workbench integration remains unfinished |
-| USB0 | Explicit disconnected-peer detection profile; no packet transfer or general USB protocol model |
+| USB0 | Clock/menu workbench uses a disconnected-peer profile; the separate native rehearsal models bounded original-ROM USB transfers and reply guards. General USB/controller behavior and physical timing remain unqualified |
 | RTC | Bounded configuration and static time snapshot with delayed completion; no advancing calendar or alarm |
 | Internal ADC and inputs | Selected channels, external PB9, completion/IRQ handling and explicit startup inputs; joystick/button-1 GPIO delivery checked; ADC input for top-right Return tested, other analog keys unfinished |
 | PSRAM | Startup commands and bounded RAM backing; capacity and timing remain explicit assumptions |
