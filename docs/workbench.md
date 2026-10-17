@@ -3,7 +3,9 @@
 **17 October update:** The workbench also runs the new [native Doom prototype](doom.md),
 with joystick movement and turning, keypad firing and a corrected 160-pixel
 status bar. Arrow keys drive the joystick; Space presses it. Joystick input
-can be combined with one keypad button. The following stock-firmware results
+can be combined with one keypad button. Doom sound effects now play through
+the browser's **Enable sound** control, with mute and volume; music remains
+disabled. The following stock-firmware results
 retain their earlier scope and dates.
 
 The browser workbench is a local tool for running and watching the MiniToo

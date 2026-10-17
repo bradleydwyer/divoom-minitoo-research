@@ -4,7 +4,8 @@
 
 We have Doom running on the emulated MiniToo. Shareware E1M1 renders at 160×128,
 the joystick moves and turns the player, with buttons for firing and Use.
-Moving while firing works too. It was probably inevitable that we'd end up here.
+Moving while firing works too. Sound effects now play through the browser.
+It was probably inevitable that we'd end up here.
 
 <img src="images/doom-e1m1.png" width="480" height="384" alt="Doom E1M1 rendered by the PI32v2 prototype, with the corrected status bar showing 50 ammo, 100 percent health and the player face">
 
@@ -20,8 +21,8 @@ program, including the renderer and game logic. The [browser workbench](workbenc
 shows its pixels and sends GPIO/ADC input changes to the board model.
 
 It runs on one core with interrupts disabled. The runtime supplies startup,
-integer arithmetic, display output, input and read-only SD access. It calls no
-stock application or ROM services. The kernel is 274,424 bytes; game data lives
+integer arithmetic, display output, input, audio and read-only SD access. It calls no
+stock application or ROM services. The kernel is 275,000 bytes; game data lives
 in a separate 8 MiB synthetic SD image containing the converted shareware WAD.
 
 | Control | Action |
@@ -38,6 +39,11 @@ The joystick is digital. Its separate contacts can be held with one keypad
 button, so movement and firing work together. The five keypad buttons share an
 ADC input; pressing several of those together is still unsupported.
 
+Click **Enable sound** below the display for gameplay sound effects, with mute
+and volume controls. The game mixes up to eight channels into the emulated
+DAC at 11025 Hz; the browser plays the samples consumed by that DAC. Music is
+still disabled. Slower-than-real-time emulation can cause gaps in playback.
+
 ## What we checked
 
 A recorded emulator run checked forward and backward movement, both turning
@@ -47,6 +53,11 @@ memory and checked against the final RAM snapshot. A separate run repeated the
 existing keypad checks. Nine host tests pass, including status-bar clipping at
 the framebuffer edges.
 
+The audio test checks a pistol waveform against the original WAD samples and
+compares the live browser transport with the DAC capture byte for byte. The
+recorded run has no DAC underruns. Browser checks confirm non-silent buffers
+reach a running AudioContext, and pause and mute stop playback.
+
 That is a useful first playable result. It is still an early prototype.
 
 The physical MiniToo has not run this port. It currently loads as a decoded
@@ -55,7 +66,7 @@ installation rehearsal. Display startup, usable physical SRAM, boot packaging
 and storage timing still need work. The 320 KiB cache has only 548 bytes spare
 in this level, so memory is tight. Full-game completion, long sessions, enemy
 kills and door-opening behaviour have not been verified by the recorded test.
-Music, sound, saving and networking are disabled. Emulator speed does not
+Music, saving and networking are disabled. Emulator speed does not
 establish a physical frame rate.
 
 The port and its build inputs remain in the private research tree while those
