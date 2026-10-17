@@ -22,7 +22,7 @@ shows its pixels and sends GPIO/ADC input changes to the board model.
 
 It runs on one core with interrupts disabled. The runtime supplies startup,
 integer arithmetic, display output, input, audio and read-only SD access. It calls no
-stock application or ROM services. The kernel is 275,000 bytes; game data lives
+stock application or ROM services. The kernel is 275,128 bytes; game data lives
 in a separate 8 MiB synthetic SD image containing the converted shareware WAD.
 
 | Control | Action |
@@ -50,13 +50,18 @@ A recorded emulator run checked forward and backward movement, both turning
 directions, movement while firing, joystick press and release over 34 observed
 game frames. Position, angle, ammunition and input bits were read from guest
 memory and checked against the final RAM snapshot. A separate run repeated the
-existing keypad checks. Nine host tests pass, including status-bar clipping at
+existing keypad checks. Ten host tests pass, including status-bar clipping at
 the framebuffer edges.
 
 The audio test checks a pistol waveform against the original WAD samples and
 compares the live browser transport with the DAC capture byte for byte. The
 recorded run has no DAC underruns. Browser checks confirm non-silent buffers
 reach a running AudioContext, and pause and mute stop playback.
+
+A later gameplay session exposed a divide-by-zero when a masked wall narrowed
+to one screen column. Both wall-rendering passes now handle that case explicitly.
+The reported operands pass a native CPU probe using the production arithmetic
+code, and the updated game completes a 571-degree turn without a fault.
 
 That is a useful first playable result. It is still an early prototype.
 

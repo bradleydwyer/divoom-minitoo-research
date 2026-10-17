@@ -7,7 +7,8 @@ forward/backward movement, both turns, movement while firing and input release
 pass a recorded 34-frame exercise. The existing keypad exercise still passes,
 and the status bar has been corrected for the smaller display. Sound effects
 now reach the browser through the emulated DAC; a captured pistol waveform
-matches the WAD sample exactly. Music remains disabled. Nine host checks pass.
+matches the WAD sample exactly. Music remains disabled. Ten host checks pass,
+including a fix for a divide-by-zero on single-column masked walls.
 This remains an emulator prototype with tight memory limits;
 the physical device has not run it. [Details and screenshot](doom.md).
 
