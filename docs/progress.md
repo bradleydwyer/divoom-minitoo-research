@@ -1,5 +1,16 @@
 # Progress
 
+## 17 October: Doom in the emulator
+
+Shareware Doom E1M1 now runs as native PI32v2 code at 160×128. Joystick
+forward/backward movement, both turns, movement while firing and input release
+pass a recorded 34-frame exercise. The existing keypad exercise still passes,
+and the status bar has been corrected for the smaller display. Nine host
+checks pass. This remains an emulator prototype with tight memory limits;
+the physical device has not run it. [Details and screenshot](doom.md).
+
+## Earlier results
+
 This page records every check made so far on one physical MiniToo running stock
 firmware 343005, and in the separate offline emulator. Results are as of
 13 October 2026.

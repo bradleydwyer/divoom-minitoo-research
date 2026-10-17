@@ -63,6 +63,16 @@ represented as Python constants or JSON/text hexadecimal strings, with
 project-specific addresses, hashes and explanatory metadata. The excerpted
 instruction/table bytes are unchanged. The complete ROM is not bundled.
 
+Doom experiment screenshot
+--------------------------
+docs/images/doom-e1m1.png records the project's native PI32v2 Doom prototype
+running shareware E1M1 in the emulator. Doom game artwork and shareware data
+remain the property of their rightsholders, including id Software, and are not
+covered by this repository's MIT license. No WAD or game-data package is supplied.
+The screenshot is included to document the experiment described in docs/doom.md.
+The engine work builds on next-hack/MG24_Doom_BLE at commit
+fc02a55340d1d5b1a5155b12ac049436ef5d4f7a and its GPL-2.0-or-later engine sources.
+
 Vendor materials
 ----------------
 Vendor firmware, APKs, extracted components, generated vendor disassembly and

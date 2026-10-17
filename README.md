@@ -11,6 +11,16 @@ The MiniToo uses a Jieli BR28 chip with two PI32v2 CPU cores. All device results
 >
 > **Please don't rush into running the live tools yet.** Read the linked notes and understand the risks first. RAM-only code and read-only flash operations are not risk-free.
 
+## Doom runs in the emulator
+
+<img src="docs/images/doom-e1m1.png" width="480" height="384" alt="Doom E1M1 running in the MiniToo emulator with its corrected 160-pixel status bar">
+
+**17 October 2026:** Shareware Doom E1M1 is running as native PI32v2 code at
+160×128. The joystick moves and turns, the buttons fire and use, and movement
+while firing works. The status bar now fits the small display. This is based on
+next-hack's MG24 Doom engine with a MiniToo runtime. It has not run on the
+physical device, and memory is tight. [The port, controls and checks](docs/doom.md).
+
 ## Our first standalone program
 
 <img src="docs/images/robot-splash.png" width="240" height="192" alt="Orange robot drawn by our standalone program in the emulator, with the second button light lit">
@@ -91,6 +101,7 @@ This procedure has only been tested from idle ROM; it is not known to recover th
 ## Read more
 
 - [Progress](docs/progress.md): every check so far, on the device and in the emulator, with its limits.
+- [Doom](docs/doom.md): native PI32v2 gameplay in the emulator, joystick and button controls, and remaining work.
 - [Firmware analysis](docs/firmware-analysis.md): the decompilation and analysis pass, its findings and remaining gaps.
 - [Emulator](docs/emulator.md): stock-firmware emulation, CPU tests checked against the device, and how to run the published fixtures without one.
 - [Browser workbench](docs/workbench.md): local screen/control tools, their QEMU connection, and remaining input, removable-storage and audio work.
